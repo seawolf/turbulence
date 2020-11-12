@@ -1,0 +1,12 @@
+version: '3.2'
+
+services:
+  app:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    volumes:
+    - gcloud_auth:/root/.config
+    - kube_config:/root/.kube
+
+volumes:
+  gcloud_auth: {}
+  kube_config: {}
