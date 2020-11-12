@@ -15,6 +15,7 @@ otherwise used to, then this may help.
 
 ##### Prerequisites
 
+* Ruby
 * Docker & Docker Compose
 
 ##### Invocation
