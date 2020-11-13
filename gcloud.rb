@@ -3,7 +3,6 @@
 require 'yaml'
 
 CONFIG_FILE = './config.yml'
-File.exists?(CONFIG_FILE) || File.write(CONFIG_FILE, YAML.dump({}))
 
 def config
   YAML.load(File.read(CONFIG_FILE))
@@ -26,6 +25,22 @@ def init_container
   puts "\n·  (Re-)Creating containers..."
   system(%Q{ docker-compose down 2> /dev/null }) || exit(1)
   system(%Q{ docker-compose up   2> /dev/null }) || exit(1)
+end
+
+def init_config?
+  if (namespace_name = get(:namespace_name) && pod_id = get(:pod_id))
+    puts "\n·  You have previously run this to connect to the pod #{pod_id.inspect} so we can do so again."
+    print "Would you like to keep this selection (y/n)? "
+    choice = gets.chomp.downcase
+
+    return choice != 'y'
+  end
+
+  return true
+end
+
+def init_config!
+  File.write(CONFIG_FILE, YAML.dump({}))
 end
 
 AUTH_COMMAND="gcloud auth login"
@@ -111,6 +126,12 @@ def connect_to_pod
 
   puts "\n·  Connecting to pod: #{pod_id} ..."
   system(%Q{ docker-compose run --rm app sh -c "kubectl exec -it #{pod_id} -n #{namespace_name} -c puma bash" }) || exit(1)
+end
+
+if File.exists?(CONFIG_FILE)
+  init_config? && init_config!
+else
+  init_config!
 end
 
 init_container && connect_to_pod
