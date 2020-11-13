@@ -3,6 +3,8 @@
 require 'yaml'
 
 CONFIG_FILE = './config.yml'
+AUTH_COMMAND="gcloud auth login"
+LIST_COMMAND="gcloud auth list 2> /dev/null | grep \\*"
 
 def config
   YAML.load(File.read(CONFIG_FILE))
@@ -28,12 +30,22 @@ def init_container
 end
 
 def init_config?
-  if (namespace_name = get(:namespace_name))
-    puts "\n·  You have previously run this to connect to the namespace #{namespace_name.inspect} so we can do so again."
+  if (project_id = get(:project_id)) &&
+      (namespace_name = get(:namespace_name)) &&
+      (cluster_name = get(:cluster_name)) &&
+      (cluster_region = get(:cluster_region))
+    msg = <<~ENDOFMSG
+      ·  You have previously run this to connect to:
+         · project: #{project_id}
+         · cluster: #{cluster_name} [#{cluster_region}]
+         · namespace: #{namespace_name}
+
+    ENDOFMSG
+    puts msg
     print "Would you like to keep this selection (y/n)? "
     choice = gets.chomp.downcase
 
-    return choice != 'y'
+    return choice != 'y' && choice != ''
   end
 
   return true
@@ -43,8 +55,6 @@ def init_config!
   File.write(CONFIG_FILE, YAML.dump({}))
 end
 
-AUTH_COMMAND="gcloud auth login"
-LIST_COMMAND="gcloud auth list 2> /dev/null | grep \\*"
 def auth_with_gcloud
   puts "\n·  Authenticating with Google Cloud..."
   system(%Q{ docker-compose run --rm app sh -c "(#{LIST_COMMAND}) || ((#{AUTH_COMMAND}) && (#{LIST_COMMAND}))" }) || exit(1)
@@ -65,7 +75,7 @@ def get_gcloud_project
     set(:project_id, project_id)
   end
 
-  puts "\n·  Setting your active project to #{project_id} ..."
+  puts "\n·  Selecting the project \"#{project_id}\" as active..."
   system(%Q{ docker-compose run --rm app gcloud config set project #{project_id} }) || exit(1)
 end
 
@@ -76,12 +86,12 @@ def get_k8s_cluster
   end
 
   unless (cluster_name = get(:cluster_name) && cluster_region = get(:cluster_region))
-    puts "\n·  Kubernetes Clusters:"
+    puts "\n·  Kubernetes clusters in the \"#{project_id}\" project:"
     system(%Q{ docker-compose run --rm app gcloud container clusters list }) || exit(1)
 
-    print "Cluster name: "
+    print "Cluster Name: "
     cluster_name = gets.chomp
-    print "Cluster location: "
+    print "Cluster Location: "
     cluster_region = gets.chomp
 
     set(:cluster_name, cluster_name)
@@ -96,10 +106,10 @@ def get_k8s_namespace
   get(:cluster_name) || get_k8s_cluster
 
   unless (namespace_name = get(:namespace_name))
-    puts "\n·  Available Kubernetes namespaces:"
+    puts "\n·  Kubernetes namespaces in the \"#{cluster_name}\" cluster:"
     system(%Q{ docker-compose run --rm app kubectl get namespaces }) || exit(1)
 
-    print "Namespace: "
+    print "Namespace Name: "
     namespace_name = gets.chomp
 
     set(:namespace_name, namespace_name)
@@ -109,7 +119,7 @@ end
 def get_k8s_pods
   namespace_name = get(:namespace_name) || get_k8s_namespace
 
-  puts "\n·  Getting pods in the namespace #{namespace_name} ..."
+  puts "\n·  Pods in the \"#{namespace_name}\" namespace:"
   system(%Q{ docker-compose run --rm app kubectl get pods -n #{namespace_name} | grep web-kiosk-foreground }) || exit(1)
 
   print "Pod ID: "
@@ -132,4 +142,4 @@ else
   init_config!
 end
 
-init_container && connect_to_pod
+init_container && auth_with_gcloud && connect_to_pod

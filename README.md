@@ -34,10 +34,4 @@ Ths will:
 5. show the K8S pods in that cluster, so you can pick the one you want
 6. connect to your pod, so you can do what you wanted to do.
 
-At each stage, information entered will be stored for the next time.
-
-To ask for the information again, delete the value from `config.yml`.
-
-### TODOs
-
-* provide more commands to allow steps to be repeated without editing config.yml
+Information entered at each stage will be stored for the next time, though you can start afresh too.
