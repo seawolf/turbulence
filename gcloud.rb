@@ -22,7 +22,7 @@ def set(key, value)
   value
 end
 
-def init_tooling
+def init_container
   puts "\n·  (Re-)Creating containers..."
   system(%Q{ docker-compose down 2> /dev/null }) || exit(1)
   system(%Q{ docker-compose up   2> /dev/null }) || exit(1)
@@ -30,15 +30,15 @@ end
 
 AUTH_COMMAND="gcloud auth login"
 LIST_COMMAND="gcloud auth list 2> /dev/null | grep \\*"
-def init_gcloud_auth
+def auth_with_gcloud
   puts "\n·  Authenticating with Google Cloud..."
   system(%Q{ docker-compose run --rm app sh -c "(#{LIST_COMMAND}) || ((#{AUTH_COMMAND}) && (#{LIST_COMMAND}))" }) || exit(1)
 
   set(:last_auth, Time.now.to_i)
 end
 
-def init_gcloud_project
-  get(:last_auth) || init_gcloud_auth
+def get_gcloud_project
+  get(:last_auth) || auth_with_gcloud
 
   unless (project_id = get(:project_id))
     puts "\n·  Projects:"
@@ -54,9 +54,9 @@ def init_gcloud_project
   system(%Q{ docker-compose run --rm app gcloud config set project #{project_id} }) || exit(1)
 end
 
-def init_k8s_cluster
+def get_k8s_cluster
   unless (project_id = get(:project_id))
-    init_gcloud_project
+    get_gcloud_project
     project_id = get(:project_id)
   end
 
@@ -77,8 +77,8 @@ def init_k8s_cluster
   system(%Q{ docker-compose run --rm app gcloud container clusters get-credentials #{cluster_name} --region #{cluster_region} --project #{project_id} }) || exit(1)
 end
 
-def init_k8s_namespace
-  get(:cluster_name) || init_k8s_cluster
+def get_k8s_namespace
+  get(:cluster_name) || get_k8s_cluster
 
   unless (namespace_name = get(:namespace_name))
     puts "\n·  Available Kubernetes namespaces:"
@@ -91,8 +91,8 @@ def init_k8s_namespace
   end
 end
 
-def init_k8s_pods
-  namespace_name = get(:namespace_name) || init_k8s_namespace
+def get_k8s_pods
+  namespace_name = get(:namespace_name) || get_k8s_namespace
 
   unless (pod_id = get(:pod_id))
     puts "\n·  Getting pods from #{namespace_name} ..."
@@ -106,11 +106,11 @@ def init_k8s_pods
 end
 
 def connect_to_pod
-  namespace_name = get(:namespace_name) || init_k8s_namespace
-  pod_id = get(:pod_id) || init_k8s_pods
+  namespace_name = get(:namespace_name) || get_k8s_namespace
+  pod_id = get(:pod_id) || get_k8s_pods
 
   puts "\n·  Connecting to pod: #{pod_id} ..."
   system(%Q{ docker-compose run --rm app sh -c "kubectl exec -it #{pod_id} -n #{namespace_name} -c puma bash" }) || exit(1)
 end
 
-init_tooling && connect_to_pod
+init_container && connect_to_pod
