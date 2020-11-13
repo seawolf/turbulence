@@ -28,8 +28,8 @@ def init_container
 end
 
 def init_config?
-  if (namespace_name = get(:namespace_name) && pod_id = get(:pod_id))
-    puts "\n·  You have previously run this to connect to the pod #{pod_id.inspect} so we can do so again."
+  if (namespace_name = get(:namespace_name))
+    puts "\n·  You have previously run this to connect to the namespace #{namespace_name.inspect} so we can do so again."
     print "Would you like to keep this selection (y/n)? "
     choice = gets.chomp.downcase
 
@@ -109,20 +109,18 @@ end
 def get_k8s_pods
   namespace_name = get(:namespace_name) || get_k8s_namespace
 
-  unless (pod_id = get(:pod_id))
-    puts "\n·  Getting pods from #{namespace_name} ..."
-    system(%Q{ docker-compose run --rm app kubectl get pods -n #{namespace_name} | grep web-kiosk-foreground }) || exit(1)
+  puts "\n·  Getting pods in the namespace #{namespace_name} ..."
+  system(%Q{ docker-compose run --rm app kubectl get pods -n #{namespace_name} | grep web-kiosk-foreground }) || exit(1)
 
-    print "Pod ID: "
-    pod_id = gets.chomp
+  print "Pod ID: "
+  pod_id = gets.chomp
 
-    set(:pod_id, pod_id)
-  end
+  set(:pod_id, pod_id)
 end
 
 def connect_to_pod
   namespace_name = get(:namespace_name) || get_k8s_namespace
-  pod_id = get(:pod_id) || get_k8s_pods
+  pod_id = get_k8s_pods  # always list pods, as they change frequently
 
   puts "\n·  Connecting to pod: #{pod_id} ..."
   system(%Q{ docker-compose run --rm app sh -c "kubectl exec -it #{pod_id} -n #{namespace_name} -c puma bash" }) || exit(1)
