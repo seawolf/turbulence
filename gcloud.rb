@@ -139,12 +139,26 @@ def get_k8s_pods
   set(:pod_id, pod_id)
 end
 
-def connect_to_pod
+def get_k8s_container
   namespace_name = get(:namespace_name) || get_k8s_namespace
-  pod_id = get_k8s_pods # always list pods, as they change frequently
+  pod_id = get(:pod_id) || get_k8s_pods
 
-  puts "\n·  Connecting to pod: #{pod_id} ..."
-  system(%( docker-compose run --rm app sh -c "kubectl exec -it #{pod_id} -n #{namespace_name} -c puma bash" )) || exit(1)
+  puts "\n·  Containers in the \"#{pod_id}\" pod:"
+  system(%( docker-compose run --rm app kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .items[*]}{range .spec.containers[*]}{"   · "}{.name}{"\\n"}{end}' )) || exit(1)
+
+  print 'Container: '
+  container_name = gets.chomp
+
+  set(:container_name, container_name)
+end
+
+def connect_to_container
+  namespace_name = get(:namespace_name) || get_k8s_namespace
+  pod_id = get_k8s_pods
+  container_name = get_k8s_container
+
+  puts "\n·  Connecting to container \"#{container_name}\" in pod: #{pod_id} ..."
+  system(%( docker-compose run --rm app sh -c "kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} bash" )) || exit(1)
 end
 
 if File.exist?(CONFIG_FILE)
@@ -155,4 +169,4 @@ end
 
 # rubocop:enable all
 
-init_container && auth_with_gcloud && connect_to_pod
+init_container && auth_with_gcloud && connect_to_container
