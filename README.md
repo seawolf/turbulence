@@ -32,6 +32,7 @@ Ths will:
 4. show the K8S clusters in that project, so you can pick the one you want
 4. show the K8S namespaces in that cluster, so you can pick the one you want
 5. show the K8S pods in that cluster, so you can pick the one you want
-6. connect to your pod, so you can do what you wanted to do.
+5. show the K8S containers in that pod, so you can pick the one you want
+6. connect to your container, using `bash`, so you can do what you wanted to do.
 
 Information entered at each stage will be stored for the next time, though you can start afresh too.
