@@ -131,7 +131,7 @@ def get_k8s_pods
   namespace_name = get(:namespace_name) || get_k8s_namespace
 
   puts "\n·  Pods in the \"#{namespace_name}\" namespace:"
-  system(%( docker-compose run --rm app kubectl get pods -n #{namespace_name} | grep web-kiosk-foreground )) || exit(1)
+  system(%( docker-compose run --rm app kubectl get pods -n #{namespace_name} | grep foreground )) || exit(1)
 
   print 'Pod ID: '
   pod_id = gets.chomp
