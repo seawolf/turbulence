@@ -84,7 +84,7 @@ def get_gcloud_project
   puts "\n·  Selecting the project \"#{project_id}\" as active..."
   system(%( docker-compose run --rm app gcloud config set project #{project_id} )) || exit(1)
 
-  return project_id
+  project_id
 end
 
 def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
@@ -109,7 +109,7 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   puts "\n·  Connecting to the #{cluster_name} cluster..."
   system(%( docker-compose run --rm app gcloud container clusters get-credentials #{cluster_name} --region #{cluster_region} --project #{project_id} )) || exit(1)
 
-  return cluster_name, cluster_region
+  [cluster_name, cluster_region]
 end
 
 def get_k8s_namespace
