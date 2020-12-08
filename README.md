@@ -35,4 +35,4 @@ Ths will:
 5. show the K8S containers in that pod, so you can pick the one you want
 6. connect to your container, using `bash`, so you can do what you wanted to do.
 
-Information entered at each stage will be stored for the next time, though you can start afresh too.
+Information entered at each stage will be stored for the next time, up to the pods, though you can start afresh too.
