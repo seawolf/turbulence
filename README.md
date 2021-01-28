@@ -21,10 +21,10 @@ otherwise used to, then this may help.
 ##### Invocation
 
 ```
-./gcloud.rb
+make
 ```
 
-Ths will:
+This will:
 
 1. download and install the Google Cloud SDK into a Docker container, so you need not install it
 2. authenticate with Google Cloud, so you can access your GCloud stuff
@@ -36,3 +36,16 @@ Ths will:
 6. connect to your container, using `bash`, so you can do what you wanted to do.
 
 Information entered at each stage will be stored for the next time, up to the pods, though you can start afresh too.
+
+
+##### Clean-Up
+
+```
+make clean
+```
+
+This will:
+1. stop any currently-running instances
+2. remove the instances
+3. remove cached data, e.g. Google auth tokens, last project used
+4. remove the Google SDK image
