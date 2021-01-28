@@ -10,7 +10,8 @@ run: build
 	@ ./gcloud.rb
 
 clean:
-	@docker-compose down
-	@rm -f config.yml
-	@docker volume rm turbulence_gcloud_auth
-	@docker volume rm turbulence_kube_config
+	@ docker-compose down
+	@ docker-compose down --volumes
+	@ docker-compose down --rmi local
+	@ (docker image ls | grep cloud-sdk) && docker-compose down --rmi all || true
+	@ rm -f config.yml
