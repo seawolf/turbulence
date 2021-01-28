@@ -13,5 +13,5 @@ clean:
 	@ docker-compose down
 	@ docker-compose down --volumes
 	@ docker-compose down --rmi local
-	@ (docker image ls | grep cloud-sdk) && docker-compose down --rmi all || true
+	@ (docker images | grep cloud-sdk && docker-compose down --rmi all) || true
 	@ rm -f config.yml
