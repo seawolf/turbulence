@@ -4,10 +4,10 @@
 all: clean build run
 
 build:
-	@docker-compose up
+	@ docker-compose up --no-start
 
 run: build
-	@./gcloud.rb
+	@ ./gcloud.rb
 
 clean:
 	@docker-compose down
