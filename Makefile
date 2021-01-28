@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := run
 .PHONY: all build run clean
 
-all: clean build run
+all: clean run
 
 build:
 	@ docker-compose up --no-start
