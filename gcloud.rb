@@ -144,7 +144,7 @@ def get_k8s_container
   pod_id = get(:pod_id) || get_k8s_pods
 
   puts "\n·  Containers in the \"#{pod_id}\" pod:"
-  system(%( docker-compose run --rm app kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .items[*]}{range .spec.containers[*]}{"   · "}{.name}{"\\n"}{end}' )) || exit(1)
+  system(%( docker-compose run --rm app kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .spec.containers[*]}{"   · "}{.name}{"\\n"}{end}' )) || exit(1)
 
   print 'Container: '
   container_name = gets.chomp
