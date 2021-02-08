@@ -48,4 +48,15 @@ This will:
 1. stop any currently-running instances
 2. remove the instances
 3. remove cached data, e.g. Google auth tokens, last project used
-4. remove the Google SDK image
+
+Changes to the Google APIs may require the Google SDK image to be updated. This can be achieved by:
+```
+make vacuum
+```
+
+This will:
+
+0. all steps in `make clean`
+1. remove the Google SDK image.
+
+The `make` command will then download the latest Google SDK image.

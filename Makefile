@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := run
-.PHONY: all build run clean
+.PHONY: all build run clean vacuum
 
 all: clean run
 
@@ -13,5 +13,7 @@ clean:
 	@ docker-compose down
 	@ docker-compose down --volumes
 	@ docker-compose down --rmi local
-	@ (docker images | grep cloud-sdk && docker-compose down --rmi all) || true
 	@ rm -f config.yml
+
+vacuum: clean
+	@ (docker images | grep cloud-sdk && docker-compose down --rmi all) || true
