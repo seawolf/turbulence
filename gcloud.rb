@@ -29,12 +29,6 @@ def set(key, value)
   value
 end
 
-def init_container
-  puts "\n·  (Re-)Creating containers..."
-  system(%( docker-compose down 2> /dev/null )) || exit(1)
-  system(%( docker-compose up   2> /dev/null )) || exit(1)
-end
-
 def init_config? # rubocop:disable Metrics/MethodLength
   if (project_id = get(:project_id)) &&
      (namespace_name = get(:namespace_name)) &&
@@ -169,4 +163,4 @@ end
 
 # rubocop:enable all
 
-init_container && auth_with_gcloud && connect_to_container
+auth_with_gcloud && connect_to_container
