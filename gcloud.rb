@@ -57,7 +57,7 @@ end
 
 def auth_with_gcloud
   puts "\n·  Authenticating with Google Cloud..."
-  system(%{ docker-compose run --rm app sh -c "(#{LIST_COMMAND}) || ((#{AUTH_COMMAND}) && (#{LIST_COMMAND}))" }) || exit(1)
+  system(%{ (#{LIST_COMMAND}) || ((#{AUTH_COMMAND}) && (#{LIST_COMMAND})) }) || exit(1)
 
   set(:last_auth, Time.now.to_i)
 end
@@ -67,7 +67,7 @@ def get_gcloud_project
 
   unless (project_id = get(:project_id))
     puts "\n·  Projects:"
-    system(%( docker-compose run --rm app gcloud projects list )) || exit(1)
+    system(%( gcloud projects list )) || exit(1)
 
     print 'Project ID: '
     project_id = gets.chomp
@@ -76,7 +76,7 @@ def get_gcloud_project
   end
 
   puts "\n·  Selecting the project \"#{project_id}\" as active..."
-  system(%( docker-compose run --rm app gcloud config set project #{project_id} )) || exit(1)
+  system(%( gcloud config set project #{project_id} )) || exit(1)
 
   project_id
 end
@@ -89,7 +89,7 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 
   unless (cluster_name = get(:cluster_name) && cluster_region = get(:cluster_region))
     puts "\n·  Kubernetes clusters in the \"#{project_id}\" project:"
-    system(%( docker-compose run --rm app gcloud container clusters list )) || exit(1)
+    system(%( gcloud container clusters list )) || exit(1)
 
     print 'Cluster Name: '
     cluster_name = gets.chomp
@@ -101,7 +101,7 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   end
 
   puts "\n·  Connecting to the #{cluster_name} cluster..."
-  system(%( docker-compose run --rm app gcloud container clusters get-credentials #{cluster_name} --region #{cluster_region} --project #{project_id} )) || exit(1)
+  system(%( gcloud container clusters get-credentials #{cluster_name} --region #{cluster_region} --project #{project_id} )) || exit(1)
 
   [cluster_name, cluster_region]
 end
@@ -113,7 +113,7 @@ def get_k8s_namespace
   return namespace_name if namespace_name
 
   puts "\n·  Kubernetes namespaces in the \"#{cluster_name}\" cluster:"
-  system(%( docker-compose run --rm app kubectl get namespaces )) || exit(1)
+  system(%( kubectl get namespaces )) || exit(1)
 
   print 'Namespace Name: '
   namespace_name = gets.chomp
@@ -125,7 +125,7 @@ def get_k8s_pods
   namespace_name = get(:namespace_name) || get_k8s_namespace
 
   puts "\n·  Pods in the \"#{namespace_name}\" namespace:"
-  system(%( docker-compose run --rm app kubectl get pods -n #{namespace_name} | grep foreground )) || exit(1)
+  system(%( kubectl get pods -n #{namespace_name} | grep foreground )) || exit(1)
 
   print 'Pod ID: '
   pod_id = gets.chomp
@@ -138,7 +138,7 @@ def get_k8s_container
   pod_id = get(:pod_id) || get_k8s_pods
 
   puts "\n·  Containers in the \"#{pod_id}\" pod:"
-  system(%( docker-compose run --rm app kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .spec.containers[*]}{"   · "}{.name}{"\\n"}{end}' )) || exit(1)
+  system(%( kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .spec.containers[*]}{"   · "}{.name}{"\\n"}{end}' )) || exit(1)
 
   print 'Container: '
   container_name = gets.chomp
@@ -152,7 +152,7 @@ def connect_to_container
   container_name = get_k8s_container
 
   puts "\n·  Connecting to container \"#{container_name}\" in pod: #{pod_id} ..."
-  system(%( docker-compose run --rm app sh -c "kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} bash" )) || exit(1)
+  system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} bash )) || exit
 end
 
 if File.exist?(CONFIG_FILE)
