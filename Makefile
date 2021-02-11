@@ -1,14 +1,19 @@
 .DEFAULT_GOAL := run
-.PHONY: all build run clean vacuum
+.PHONY: all build run shell clean vacuum
 
 all: clean run
 
 build:
 	@ docker-compose build
 
-run:
+config.yml:
 	@ [ -f config.yml ] || touch config.yml
+
+run: config.yml
 	@ docker-compose run --rm app
+
+shell: config.yml
+	@ docker-compose run --rm --entrypoint=/bin/bash app
 
 clean:
 	@ docker-compose down
