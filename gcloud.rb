@@ -205,8 +205,8 @@ def connect_to_container
   pod_id = get_k8s_pods
   container_name = get_k8s_container
 
-  puts "\n·  Connecting to container \"#{container_name}\" in pod: #{pod_id} ..."
-  system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} bash )) || exit
+  puts "\n·  Connecting to container \"#{container_name}\" in pod: #{pod_id} ...\n"
+  system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} -- bash ))
 end
 
 if File.exist?(CONFIG_FILE)
