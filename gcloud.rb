@@ -9,7 +9,14 @@ require 'tty-prompt'
 CONFIG_FILE = './config.yml'
 AUTH_COMMAND = 'gcloud auth login'
 LIST_COMMAND = 'gcloud auth list 2> /dev/null | grep \\*'
-DEFAULT_SHELL = '/bin/bash'
+SUGGESTED_COMMANDS = [
+  '/bin/bash',
+  '/bin/sh',
+  'bundle exec rails console',
+  'bundle exec irb',
+
+  { name: '(other)', value: nil }
+].freeze
 
 PROMPT = TTY::Prompt.new(prefix: "\n·  ")
 
@@ -205,7 +212,9 @@ def connect_to_container
   pod_id = get_k8s_pods
   container_name = get_k8s_container
 
-  command = PROMPT.ask('Command to run:', required: true, value: DEFAULT_SHELL)
+  command =
+    PROMPT.select('Command to run:', SUGGESTED_COMMANDS, per_page: SUGGESTED_COMMANDS.length) ||
+    PROMPT.ask('Command to run:', required: true)
 
   PROMPT.ok("\nConnecting...\n")
   system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} -- #{command} ))
