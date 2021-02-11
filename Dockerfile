@@ -26,12 +26,13 @@ RUN bash -lc "gcloud components install kubectl"
 # Configure Ruby and co.
 #####
 
-
 # Configure Bundler to not install extra fluff with gems
 RUN echo 'gem: --no-document' > /etc/gemrc
 RUN gem install bundler
 
-COPY . /usr/src
+COPY Gemfile Gemfile.lock /usr/src/
 RUN bundle install
 
+COPY gcloud.rb /usr/src
+COPY config.yml /usr/src
 ENTRYPOINT ["bash", "-lc", "bundle exec ruby gcloud.rb"]

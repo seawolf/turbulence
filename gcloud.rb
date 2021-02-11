@@ -13,7 +13,7 @@ LIST_COMMAND = 'gcloud auth list 2> /dev/null | grep \\*'
 PROMPT = TTY::Prompt.new
 
 def config
-  YAML.load(File.read(CONFIG_FILE)) # rubocop:disable Security/YAMLLoad
+  YAML.load(File.read(CONFIG_FILE)) || {} # rubocop:disable Security/YAMLLoad
 end
 
 def config!(data)

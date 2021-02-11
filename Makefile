@@ -4,10 +4,11 @@
 all: clean run
 
 build:
-	@ docker-compose up --no-start
+	@ docker-compose build
 
-run: build
-	@ ./gcloud.rb
+run:
+	@ [ -f config.yml ] || touch config.yml
+	@ docker-compose run --rm app
 
 clean:
 	@ docker-compose down
@@ -16,4 +17,4 @@ clean:
 	@ rm -f config.yml
 
 vacuum: clean
-	@ (docker images | grep cloud-sdk && docker-compose down --rmi all) || true
+	@ (docker images | grep gcr.io/google.com/cloudsdktool/cloud-sdk 1> /dev/null && docker-compose down --rmi all) || true
