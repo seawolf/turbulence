@@ -44,7 +44,7 @@ def init_config? # rubocop:disable Metrics/MethodLength
          · namespace: #{namespace_name}
     ENDOFMSG
 
-    return PROMPT.select("Would you like to keep this selection?") do |menu|
+    return PROMPT.select('Would you like to keep this selection?') do |menu|
       menu.choice 'Yes', false
       menu.choice 'No', true
     end
@@ -65,13 +65,13 @@ def auth_with_gcloud
 end
 
 Project = Struct.new(:id, :number, :name)
-def get_gcloud_project
+def get_gcloud_project # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/AbcSize
   get(:last_auth) || auth_with_gcloud
 
   unless (project_id = get(:project_id))
     projects_list = `gcloud projects list` || exit(1)
     projects = projects_list.split("\n").each_with_index.inject([]) do |list, (line, index)|
-      next list if index == 0
+      next list if index.zero?
 
       segments = line.gsub(/\s/, ' ').split(' ')
       list.push Project.new(segments[0], segments[-1], segments[1..-2].join(' '))
@@ -95,7 +95,7 @@ def get_gcloud_project
 end
 
 Cluster = Struct.new(:name, :region)
-def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/PerceivedComplexity, Metrics/CyclomaticComplexity
   unless (project_id = get(:project_id))
     get_gcloud_project
     project_id = get(:project_id)
@@ -104,7 +104,7 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   unless (cluster_name = get(:cluster_name) && cluster_region = get(:cluster_region))
     clusters_list = `gcloud container clusters list` || exit(1)
     clusters = clusters_list.split("\n").each_with_index.inject([]) do |list, (line, index)|
-      next list if index == 0
+      next list if index.zero?
 
       segments = line.gsub(/\s/, ' ').split(' ')[0..1]
       list.push Cluster.new(*segments)
@@ -119,7 +119,7 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 
     cluster = PROMPT.select("\n·  Kubernetes clusters in the \"#{project_id}\" project:", choices, per_page: choices.length)
 
-    cluster_name = set(:cluster_name, cluster .name)
+    cluster_name = set(:cluster_name, cluster.name)
     cluster_region = set(:cluster_region, cluster.region)
   end
 
@@ -130,7 +130,7 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 end
 
 Namespace = Struct.new(:name, :age)
-def get_k8s_namespace
+def get_k8s_namespace # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   cluster_name = get(:cluster_name) || get_k8s_cluster[0]
   namespace_name = get(:namespace_name)
 
@@ -138,7 +138,7 @@ def get_k8s_namespace
 
   namespaces_list = `kubectl get namespaces` || exit(1)
   namespaces = namespaces_list.split("\n").each_with_index.inject([]) do |list, (line, index)|
-    next list if index == 0
+    next list if index.zero?
 
     segments = line.gsub(/\s/, ' ').split(' ')
     list.push Namespace.new(segments[0], segments[-1])
@@ -158,7 +158,7 @@ def get_k8s_namespace
 end
 
 Pod = Struct.new(:id)
-def get_k8s_pods
+def get_k8s_pods # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   namespace_name = get(:namespace_name) || get_k8s_namespace
 
   pods_list = `kubectl get pods -n #{namespace_name} | grep foreground` || exit(1)
@@ -175,11 +175,11 @@ def get_k8s_pods
   end
 
   pod = PROMPT.select("\n·  Pods in the \"#{namespace_name}\" namespace:", choices, per_page: choices.length)
-  pod_id = set(:pod_id, pod.id)
+  set(:pod_id, pod.id)
 end
 
 Container = Struct.new(:name)
-def get_k8s_container
+def get_k8s_container # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   namespace_name = get(:namespace_name) || get_k8s_namespace
   pod_id = get(:pod_id) || get_k8s_pods
 
@@ -197,7 +197,7 @@ def get_k8s_container
   end
 
   container = PROMPT.select("\n·  Containers in the \"#{pod_id}\" pod:", choices, per_page: choices.length)
-  container_name = set(:container_name, container.name)
+  set(:container_name, container.name)
 end
 
 def connect_to_container
