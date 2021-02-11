@@ -9,8 +9,9 @@ require 'tty-prompt'
 CONFIG_FILE = './config.yml'
 AUTH_COMMAND = 'gcloud auth login'
 LIST_COMMAND = 'gcloud auth list 2> /dev/null | grep \\*'
+DEFAULT_SHELL = '/bin/bash'
 
-PROMPT = TTY::Prompt.new
+PROMPT = TTY::Prompt.new(prefix: "\n·  ")
 
 def config
   YAML.load(File.read(CONFIG_FILE)) || {} # rubocop:disable Security/YAMLLoad
@@ -37,7 +38,7 @@ def init_config? # rubocop:disable Metrics/MethodLength
      (namespace_name = get(:namespace_name)) &&
      (cluster_name = get(:cluster_name)) &&
      (cluster_region = get(:cluster_region))
-    puts <<~ENDOFMSG
+    PROMPT.say <<~ENDOFMSG
       ·  You have previously run this to connect to:
          · project: #{project_id}
          · cluster: #{cluster_name} [#{cluster_region}]
@@ -58,7 +59,7 @@ def init_config!
 end
 
 def auth_with_gcloud
-  puts "\n·  Authenticating with Google Cloud..."
+  PROMPT.say("\n·  Authenticating with Google Cloud...")
   system(%{ (#{LIST_COMMAND}) || ((#{AUTH_COMMAND}) && (#{LIST_COMMAND})) }) || exit(1)
 
   set(:last_auth, Time.now.to_i)
@@ -82,18 +83,18 @@ def get_gcloud_project # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
       }
     end
 
-    project = PROMPT.select("\n·  Projects in your Google Cloud:", choices, per_page: choices.length)
+    project = PROMPT.select('Projects in your Google Cloud:', choices, per_page: choices.length)
     project_id = set(:project_id, project.id)
   end
 
-  puts "\n·  Selecting the project \"#{project_id}\" as active..."
-  system(%( gcloud config set project #{project_id} )) || exit(1)
+  PROMPT.say("\nSelecting the project \"#{project_id}\" as active...")
+  system(%( gcloud config set project #{project_id} 1> /dev/null )) || exit(1)
 
   project_id
 end
 
 Cluster = Struct.new(:name, :region)
-def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
   unless (project_id = get(:project_id))
     get_gcloud_project
     project_id = get(:project_id)
@@ -113,14 +114,16 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Met
       }
     end
 
-    cluster = PROMPT.select("\n·  Kubernetes clusters in the \"#{project_id}\" project:", choices, per_page: choices.length)
+    raise "No Kubernetes clusters in the #{project_id} project! (It may be only a Cloud Run project.)" if choices.empty?
+
+    cluster = PROMPT.select("Kubernetes clusters in the \"#{project_id}\" project:", choices, per_page: choices.length)
 
     cluster_name = set(:cluster_name, cluster.name)
     cluster_region = set(:cluster_region, cluster.region)
   end
 
-  puts "\n·  Connecting to the #{cluster_name} cluster..."
-  system(%( gcloud container clusters get-credentials #{cluster_name} --region #{cluster_region} --project #{project_id} )) || exit(1)
+  PROMPT.say("\n·  Connecting to the #{cluster_name} cluster...")
+  system(%( gcloud container clusters get-credentials #{cluster_name} --region #{cluster_region} --project #{project_id} 1> /dev/nulls)) || exit(1)
 
   [cluster_name, cluster_region]
 end
@@ -144,7 +147,9 @@ def get_k8s_namespace # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     }
   end
 
-  namespace = PROMPT.select("\n·  Kubernetes namespaces in the \"#{cluster_name}\" cluster:", choices, per_page: choices.length)
+  raise "No Kubernetes namespaces in the #{cluster_name} cluster!" if choices.empty?
+
+  namespace = PROMPT.select("Kubernetes namespaces in the \"#{cluster_name}\" cluster:", choices, per_page: choices.length)
   namespace_name = set(:namespace_name, namespace.name)
 
   set(:namespace_name, namespace_name)
@@ -166,12 +171,14 @@ def get_k8s_pods # rubocop:disable Metrics/MethodLength
     }
   end
 
-  pod = PROMPT.select("\n·  Pods in the \"#{namespace_name}\" namespace:", choices, per_page: choices.length)
+  raise "No Kubernetes pods in the #{namespace_name} namespace!" if choices.empty?
+
+  pod = PROMPT.select("Pods in the \"#{namespace_name}\" namespace:", choices, per_page: choices.length)
   set(:pod_id, pod.id)
 end
 
 Container = Struct.new(:name)
-def get_k8s_container # rubocop:disable Metrics/MethodLength
+def get_k8s_container # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   namespace_name = get(:namespace_name) || get_k8s_namespace
   pod_id = get(:pod_id) || get_k8s_pods
 
@@ -187,7 +194,9 @@ def get_k8s_container # rubocop:disable Metrics/MethodLength
     }
   end
 
-  container = PROMPT.select("\n·  Containers in the \"#{pod_id}\" pod:", choices, per_page: choices.length)
+  raise "No containers in the #{pod_id} pod!" if choices.empty?
+
+  container = PROMPT.select("Containers in the \"#{pod_id}\" pod:", choices, per_page: choices.length)
   set(:container_name, container.name)
 end
 
@@ -196,8 +205,10 @@ def connect_to_container
   pod_id = get_k8s_pods
   container_name = get_k8s_container
 
-  puts "\n·  Connecting to container \"#{container_name}\" in pod: #{pod_id} ...\n"
-  system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} -- bash ))
+  command = PROMPT.ask('Command to run:', required: true, value: DEFAULT_SHELL)
+
+  PROMPT.ok("\nConnecting...\n")
+  system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} -- #{command} ))
 end
 
 if File.exist?(CONFIG_FILE)
