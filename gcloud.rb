@@ -4,10 +4,13 @@
 # rubocop:disable Layout/LineLength, Naming/AccessorMethodName
 
 require 'yaml'
+require 'tty-prompt'
 
 CONFIG_FILE = './config.yml'
 AUTH_COMMAND = 'gcloud auth login'
 LIST_COMMAND = 'gcloud auth list 2> /dev/null | grep \\*'
+
+PROMPT = TTY::Prompt.new
 
 def config
   YAML.load(File.read(CONFIG_FILE)) # rubocop:disable Security/YAMLLoad
