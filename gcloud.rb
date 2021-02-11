@@ -37,18 +37,17 @@ def init_config? # rubocop:disable Metrics/MethodLength
      (namespace_name = get(:namespace_name)) &&
      (cluster_name = get(:cluster_name)) &&
      (cluster_region = get(:cluster_region))
-    msg = <<~ENDOFMSG
+    puts <<~ENDOFMSG
       ·  You have previously run this to connect to:
          · project: #{project_id}
          · cluster: #{cluster_name} [#{cluster_region}]
          · namespace: #{namespace_name}
-
     ENDOFMSG
-    puts msg
-    print 'Would you like to keep this selection (y/n)? '
-    choice = gets.chomp.downcase
 
-    return choice != 'y' && choice != ''
+    return PROMPT.select("Would you like to keep this selection?") do |menu|
+      menu.choice 'Yes', false
+      menu.choice 'No', true
+    end
   end
 
   true
@@ -65,17 +64,28 @@ def auth_with_gcloud
   set(:last_auth, Time.now.to_i)
 end
 
+Project = Struct.new(:id, :number, :name)
 def get_gcloud_project
   get(:last_auth) || auth_with_gcloud
 
   unless (project_id = get(:project_id))
-    puts "\n·  Projects:"
-    system(%( gcloud projects list )) || exit(1)
+    projects_list = `gcloud projects list` || exit(1)
+    projects = projects_list.split("\n").each_with_index.inject([]) do |list, (line, index)|
+      next list if index == 0
 
-    print 'Project ID: '
-    project_id = gets.chomp
+      segments = line.gsub(/\s/, ' ').split(' ')
+      list.push Project.new(segments[0], segments[-1], segments[1..-2].join(' '))
+    end
 
-    set(:project_id, project_id)
+    choices = projects.map do |project|
+      {
+        name: "#{project.name} (#{project.id})",
+        value: project
+      }
+    end
+
+    project = PROMPT.select("\n·  Projects in your Google Cloud:", choices, per_page: choices.length)
+    project_id = set(:project_id, project.id)
   end
 
   puts "\n·  Selecting the project \"#{project_id}\" as active..."
@@ -84,6 +94,7 @@ def get_gcloud_project
   project_id
 end
 
+Cluster = Struct.new(:name, :region)
 def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   unless (project_id = get(:project_id))
     get_gcloud_project
@@ -91,16 +102,25 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   end
 
   unless (cluster_name = get(:cluster_name) && cluster_region = get(:cluster_region))
-    puts "\n·  Kubernetes clusters in the \"#{project_id}\" project:"
-    system(%( gcloud container clusters list )) || exit(1)
+    clusters_list = `gcloud container clusters list` || exit(1)
+    clusters = clusters_list.split("\n").each_with_index.inject([]) do |list, (line, index)|
+      next list if index == 0
 
-    print 'Cluster Name: '
-    cluster_name = gets.chomp
-    print 'Cluster Location: '
-    cluster_region = gets.chomp
+      segments = line.gsub(/\s/, ' ').split(' ')[0..1]
+      list.push Cluster.new(*segments)
+    end
 
-    set(:cluster_name, cluster_name)
-    set(:cluster_region, cluster_region)
+    choices = clusters.map do |cluster|
+      {
+        name: "#{cluster.name} (#{cluster.region})",
+        value: cluster
+      }
+    end
+
+    cluster = PROMPT.select("\n·  Kubernetes clusters in the \"#{project_id}\" project:", choices, per_page: choices.length)
+
+    cluster_name = set(:cluster_name, cluster .name)
+    cluster_region = set(:cluster_region, cluster.region)
   end
 
   puts "\n·  Connecting to the #{cluster_name} cluster..."
@@ -109,44 +129,75 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   [cluster_name, cluster_region]
 end
 
+Namespace = Struct.new(:name, :age)
 def get_k8s_namespace
   cluster_name = get(:cluster_name) || get_k8s_cluster[0]
   namespace_name = get(:namespace_name)
 
   return namespace_name if namespace_name
 
-  puts "\n·  Kubernetes namespaces in the \"#{cluster_name}\" cluster:"
-  system(%( kubectl get namespaces )) || exit(1)
+  namespaces_list = `kubectl get namespaces` || exit(1)
+  namespaces = namespaces_list.split("\n").each_with_index.inject([]) do |list, (line, index)|
+    next list if index == 0
 
-  print 'Namespace Name: '
-  namespace_name = gets.chomp
+    segments = line.gsub(/\s/, ' ').split(' ')
+    list.push Namespace.new(segments[0], segments[-1])
+  end
+
+  choices = namespaces.map do |namespace|
+    {
+      name: "#{namespace.name} (#{namespace.age}) old",
+      value: namespace
+    }
+  end
+
+  namespace = PROMPT.select("\n·  Kubernetes namespaces in the \"#{cluster_name}\" cluster:", choices, per_page: choices.length)
+  namespace_name = set(:namespace_name, namespace.name)
 
   set(:namespace_name, namespace_name)
 end
 
+Pod = Struct.new(:id)
 def get_k8s_pods
   namespace_name = get(:namespace_name) || get_k8s_namespace
 
-  puts "\n·  Pods in the \"#{namespace_name}\" namespace:"
-  system(%( kubectl get pods -n #{namespace_name} | grep foreground )) || exit(1)
+  pods_list = `kubectl get pods -n #{namespace_name} | grep foreground` || exit(1)
+  pods = pods_list.split("\n").inject([]) do |list, line|
+    segments = line.gsub(/\s/, ' ').split(' ')[0..0]
+    list.push Pod.new(segments[0])
+  end
 
-  print 'Pod ID: '
-  pod_id = gets.chomp
+  choices = pods.map do |pod|
+    {
+      name: pod.id,
+      value: pod
+    }
+  end
 
-  set(:pod_id, pod_id)
+  pod = PROMPT.select("\n·  Pods in the \"#{namespace_name}\" namespace:", choices, per_page: choices.length)
+  pod_id = set(:pod_id, pod.id)
 end
 
+Container = Struct.new(:name)
 def get_k8s_container
   namespace_name = get(:namespace_name) || get_k8s_namespace
   pod_id = get(:pod_id) || get_k8s_pods
 
-  puts "\n·  Containers in the \"#{pod_id}\" pod:"
-  system(%( kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .spec.containers[*]}{"   · "}{.name}{"\\n"}{end}' )) || exit(1)
+  containers_list = `kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .spec.containers[*]}{.name}{"\\n"}{end}'` || exit(1)
+  containers = containers_list.split("\n").inject([]) do |list, line|
+    segments = line.gsub(/\s/, ' ').split(' ')[0..0]
+    list.push Container.new(segments[0])
+  end
 
-  print 'Container: '
-  container_name = gets.chomp
+  choices = containers.map do |container|
+    {
+      name: container.name,
+      value: container
+    }
+  end
 
-  set(:container_name, container_name)
+  container = PROMPT.select("\n·  Containers in the \"#{pod_id}\" pod:", choices, per_page: choices.length)
+  container_name = set(:container_name, container.name)
 end
 
 def connect_to_container
