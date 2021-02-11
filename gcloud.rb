@@ -64,17 +64,15 @@ def auth_with_gcloud
   set(:last_auth, Time.now.to_i)
 end
 
-Project = Struct.new(:id, :number, :name)
-def get_gcloud_project # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/AbcSize
+Project = Struct.new(:id, :name)
+def get_gcloud_project # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   get(:last_auth) || auth_with_gcloud
 
   unless (project_id = get(:project_id))
-    projects_list = `gcloud projects list` || exit(1)
-    projects = projects_list.split("\n").each_with_index.inject([]) do |list, (line, index)|
-      next list if index.zero?
-
-      segments = line.gsub(/\s/, ' ').split(' ')
-      list.push Project.new(segments[0], segments[-1], segments[1..-2].join(' '))
+    projects_list = `gcloud projects list --format="value(projectId, name)"` || exit(1)
+    projects = projects_list.split("\n").map do |line|
+      segments = line.split(/\s+/)
+      Project.new(segments[0], segments[1..-1].join(' '))
     end
 
     choices = projects.map do |project|
@@ -95,19 +93,17 @@ def get_gcloud_project # rubocop:disable Metrics/MethodLength, Metrics/Cyclomati
 end
 
 Cluster = Struct.new(:name, :region)
-def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/PerceivedComplexity, Metrics/CyclomaticComplexity
+def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
   unless (project_id = get(:project_id))
     get_gcloud_project
     project_id = get(:project_id)
   end
 
   unless (cluster_name = get(:cluster_name) && cluster_region = get(:cluster_region))
-    clusters_list = `gcloud container clusters list` || exit(1)
-    clusters = clusters_list.split("\n").each_with_index.inject([]) do |list, (line, index)|
-      next list if index.zero?
-
-      segments = line.gsub(/\s/, ' ').split(' ')[0..1]
-      list.push Cluster.new(*segments)
+    clusters_list = `gcloud container clusters list --format="value(name, zone)"` || exit(1)
+    clusters = clusters_list.split("\n").map do |line|
+      segments = line.split(/\s+/)
+      Cluster.new(*segments)
     end
 
     choices = clusters.map do |cluster|
@@ -129,24 +125,21 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Met
   [cluster_name, cluster_region]
 end
 
-Namespace = Struct.new(:name, :age)
+Namespace = Struct.new(:name)
 def get_k8s_namespace # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   cluster_name = get(:cluster_name) || get_k8s_cluster[0]
   namespace_name = get(:namespace_name)
 
   return namespace_name if namespace_name
 
-  namespaces_list = `kubectl get namespaces` || exit(1)
-  namespaces = namespaces_list.split("\n").each_with_index.inject([]) do |list, (line, index)|
-    next list if index.zero?
-
-    segments = line.gsub(/\s/, ' ').split(' ')
-    list.push Namespace.new(segments[0], segments[-1])
+  namespaces_list = `kubectl get namespaces -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}'` || exit(1)
+  namespaces = namespaces_list.split("\n").map do |line|
+    Namespace.new(line)
   end
 
   choices = namespaces.map do |namespace|
     {
-      name: "#{namespace.name} (#{namespace.age}) old",
+      name: namespace.name,
       value: namespace
     }
   end
@@ -158,13 +151,12 @@ def get_k8s_namespace # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 end
 
 Pod = Struct.new(:id)
-def get_k8s_pods # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+def get_k8s_pods # rubocop:disable Metrics/MethodLength
   namespace_name = get(:namespace_name) || get_k8s_namespace
 
-  pods_list = `kubectl get pods -n #{namespace_name} | grep foreground` || exit(1)
-  pods = pods_list.split("\n").inject([]) do |list, line|
-    segments = line.gsub(/\s/, ' ').split(' ')[0..0]
-    list.push Pod.new(segments[0])
+  pods_list = `kubectl get pods -n #{namespace_name} -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}' | grep foreground` || exit(1)
+  pods = pods_list.split("\n").map do |line|
+    Pod.new(line)
   end
 
   choices = pods.map do |pod|
@@ -179,14 +171,13 @@ def get_k8s_pods # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 end
 
 Container = Struct.new(:name)
-def get_k8s_container # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+def get_k8s_container # rubocop:disable Metrics/MethodLength
   namespace_name = get(:namespace_name) || get_k8s_namespace
   pod_id = get(:pod_id) || get_k8s_pods
 
   containers_list = `kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .spec.containers[*]}{.name}{"\\n"}{end}'` || exit(1)
-  containers = containers_list.split("\n").inject([]) do |list, line|
-    segments = line.gsub(/\s/, ' ').split(' ')[0..0]
-    list.push Container.new(segments[0])
+  containers = containers_list.split("\n").map do |line|
+    Container.new(line)
   end
 
   choices = containers.map do |container|
