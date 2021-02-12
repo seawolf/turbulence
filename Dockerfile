@@ -33,6 +33,6 @@ RUN gem install bundler
 COPY Gemfile Gemfile.lock /usr/src/
 RUN bundle install
 
-COPY gcloud.rb /usr/src
+COPY gcloud.rb lib /usr/src/
 COPY config.yml /usr/src
 ENTRYPOINT ["bash", "-lc", "bundle exec ruby gcloud.rb"]

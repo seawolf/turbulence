@@ -3,8 +3,9 @@
 
 # rubocop:disable Layout/LineLength, Naming/AccessorMethodName
 
+require_relative './lib/menu'
+
 require 'yaml'
-require 'tty-prompt'
 
 CONFIG_FILE = './config.yml'
 AUTH_COMMAND = 'gcloud auth login'
@@ -17,8 +18,6 @@ SUGGESTED_COMMANDS = [
 
   { name: '(other)', value: nil }
 ].freeze
-
-PROMPT = TTY::Prompt.new(prefix: "\n·  ")
 
 def config
   YAML.load(File.read(CONFIG_FILE)) || {} # rubocop:disable Security/YAMLLoad
@@ -52,10 +51,11 @@ def init_config? # rubocop:disable Metrics/MethodLength
          · namespace: #{namespace_name}
     ENDOFMSG
 
-    return PROMPT.select('Would you like to keep this selection?') do |menu|
-      menu.choice 'Yes', false
-      menu.choice 'No', true
-    end
+    choices = [
+      { name: 'Yes', value: false },
+      { name: 'No', value: true }
+    ]
+    return menu_auto_select('Would you like to keep this selection?', choices)
   end
 
   true
@@ -90,7 +90,7 @@ def get_gcloud_project # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
       }
     end
 
-    project = PROMPT.select('Projects in your Google Cloud:', choices, per_page: choices.length)
+    project = menu_auto_select('Projects in your Google Cloud:', choices, per_page: choices.length)
     project_id = set(:project_id, project.id)
   end
 
@@ -123,7 +123,7 @@ def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Met
 
     raise "No Kubernetes clusters in the #{project_id} project! (It may be only a Cloud Run project.)" if choices.empty?
 
-    cluster = PROMPT.select("Kubernetes clusters in the \"#{project_id}\" project:", choices, per_page: choices.length)
+    cluster = menu_auto_select("Kubernetes clusters in the \"#{project_id}\" project:", choices, per_page: choices.length)
 
     cluster_name = set(:cluster_name, cluster.name)
     cluster_region = set(:cluster_region, cluster.region)
@@ -156,7 +156,7 @@ def get_k8s_namespace # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 
   raise "No Kubernetes namespaces in the #{cluster_name} cluster!" if choices.empty?
 
-  namespace = PROMPT.select("Kubernetes namespaces in the \"#{cluster_name}\" cluster:", choices, per_page: choices.length)
+  namespace = menu_auto_select("Kubernetes namespaces in the \"#{cluster_name}\" cluster:", choices, per_page: choices.length)
   namespace_name = set(:namespace_name, namespace.name)
 
   set(:namespace_name, namespace_name)
@@ -180,7 +180,7 @@ def get_k8s_pods # rubocop:disable Metrics/MethodLength
 
   raise "No Kubernetes pods in the #{namespace_name} namespace!" if choices.empty?
 
-  pod = PROMPT.select("Pods in the \"#{namespace_name}\" namespace:", choices, per_page: choices.length)
+  pod = menu_auto_select("Pods in the \"#{namespace_name}\" namespace:", choices, per_page: choices.length)
   set(:pod_id, pod.id)
 end
 
@@ -203,7 +203,7 @@ def get_k8s_container # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 
   raise "No containers in the #{pod_id} pod!" if choices.empty?
 
-  container = PROMPT.select("Containers in the \"#{pod_id}\" pod:", choices, per_page: choices.length)
+  container = menu_auto_select("Containers in the \"#{pod_id}\" pod:", choices, per_page: choices.length)
   set(:container_name, container.name)
 end
 
