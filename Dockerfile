@@ -8,6 +8,7 @@ WORKDIR /usr/src
 
 RUN apt-get update && apt-get install -y \
     curl \
+    git \
     python
 
 RUN curl https://sdk.cloud.google.com > /tmp/install-gcloud &&\

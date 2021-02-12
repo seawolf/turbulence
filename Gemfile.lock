@@ -1,3 +1,12 @@
+GIT
+  remote: https://github.com/seawolf/tty-prompt.git
+  revision: 76363c7540ad928d6023799e94c6993993521edc
+  branch: auto-select-only-option
+  specs:
+    tty-prompt (0.23.0)
+      pastel (~> 0.8)
+      tty-reader (~> 0.8)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -5,9 +14,6 @@ GEM
       tty-color (~> 0.5)
     tty-color (0.6.0)
     tty-cursor (0.7.1)
-    tty-prompt (0.23.0)
-      pastel (~> 0.8)
-      tty-reader (~> 0.8)
     tty-reader (0.9.0)
       tty-cursor (~> 0.7)
       tty-screen (~> 0.8)
@@ -19,7 +25,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  tty-prompt (~> 0.23.0)
+  tty-prompt!
 
 BUNDLED WITH
    2.2.9
