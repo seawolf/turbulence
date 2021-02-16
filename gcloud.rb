@@ -3,14 +3,24 @@
 
 # rubocop:disable Layout/LineLength, Naming/AccessorMethodName
 
+require_relative './lib/menu'
+
 require 'yaml'
 
 CONFIG_FILE = './config.yml'
 AUTH_COMMAND = 'gcloud auth login'
 LIST_COMMAND = 'gcloud auth list 2> /dev/null | grep \\*'
+SUGGESTED_COMMANDS = [
+  '/bin/bash',
+  '/bin/sh',
+  'bundle exec rails console',
+  'bundle exec irb',
+
+  { name: '(other)', value: nil }
+].freeze
 
 def config
-  YAML.load(File.read(CONFIG_FILE)) # rubocop:disable Security/YAMLLoad
+  YAML.load(File.read(CONFIG_FILE)) || {} # rubocop:disable Security/YAMLLoad
 end
 
 def config!(data)
@@ -34,18 +44,18 @@ def init_config? # rubocop:disable Metrics/MethodLength
      (namespace_name = get(:namespace_name)) &&
      (cluster_name = get(:cluster_name)) &&
      (cluster_region = get(:cluster_region))
-    msg = <<~ENDOFMSG
+    PROMPT.say <<~ENDOFMSG
       ·  You have previously run this to connect to:
          · project: #{project_id}
          · cluster: #{cluster_name} [#{cluster_region}]
          · namespace: #{namespace_name}
-
     ENDOFMSG
-    puts msg
-    print 'Would you like to keep this selection (y/n)? '
-    choice = gets.chomp.downcase
 
-    return choice != 'y' && choice != ''
+    choices = [
+      { name: 'Yes', value: false },
+      { name: 'No', value: true }
+    ]
+    return menu_auto_select('Would you like to keep this selection?', choices)
   end
 
   true
@@ -56,94 +66,145 @@ def init_config!
 end
 
 def auth_with_gcloud
-  puts "\n·  Authenticating with Google Cloud..."
-  system(%{ docker-compose run --rm app sh -c "(#{LIST_COMMAND}) || ((#{AUTH_COMMAND}) && (#{LIST_COMMAND}))" }) || exit(1)
+  PROMPT.say("\n·  Authenticating with Google Cloud...")
+  system(%{ (#{LIST_COMMAND}) || ((#{AUTH_COMMAND}) && (#{LIST_COMMAND})) }) || exit(1)
 
   set(:last_auth, Time.now.to_i)
 end
 
-def get_gcloud_project
+Project = Struct.new(:id, :name)
+def get_gcloud_project # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   get(:last_auth) || auth_with_gcloud
 
   unless (project_id = get(:project_id))
-    puts "\n·  Projects:"
-    system(%( docker-compose run --rm app gcloud projects list )) || exit(1)
+    projects_list = `gcloud projects list --format="value(projectId, name)"` || exit(1)
+    projects = projects_list.split("\n").map do |line|
+      segments = line.split(/\s+/)
+      Project.new(segments[0], segments[1..-1].join(' '))
+    end
 
-    print 'Project ID: '
-    project_id = gets.chomp
+    choices = projects.map do |project|
+      {
+        name: "#{project.name} (#{project.id})",
+        value: project
+      }
+    end
 
-    set(:project_id, project_id)
+    project = menu_auto_select('Projects in your Google Cloud:', choices, per_page: choices.length)
+    project_id = set(:project_id, project.id)
   end
 
-  puts "\n·  Selecting the project \"#{project_id}\" as active..."
-  system(%( docker-compose run --rm app gcloud config set project #{project_id} )) || exit(1)
+  PROMPT.say("\nSelecting the project \"#{project_id}\" as active...")
+  system(%( gcloud config set project #{project_id} 1> /dev/null )) || exit(1)
 
   project_id
 end
 
-def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+Cluster = Struct.new(:name, :region)
+def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
   unless (project_id = get(:project_id))
     get_gcloud_project
     project_id = get(:project_id)
   end
 
   unless (cluster_name = get(:cluster_name) && cluster_region = get(:cluster_region))
-    puts "\n·  Kubernetes clusters in the \"#{project_id}\" project:"
-    system(%( docker-compose run --rm app gcloud container clusters list )) || exit(1)
+    clusters_list = `gcloud container clusters list --format="value(name, zone)"` || exit(1)
+    clusters = clusters_list.split("\n").map do |line|
+      segments = line.split(/\s+/)
+      Cluster.new(*segments)
+    end
 
-    print 'Cluster Name: '
-    cluster_name = gets.chomp
-    print 'Cluster Location: '
-    cluster_region = gets.chomp
+    choices = clusters.map do |cluster|
+      {
+        name: "#{cluster.name} (#{cluster.region})",
+        value: cluster
+      }
+    end
 
-    set(:cluster_name, cluster_name)
-    set(:cluster_region, cluster_region)
+    raise "No Kubernetes clusters in the #{project_id} project! (It may be only a Cloud Run project.)" if choices.empty?
+
+    cluster = menu_auto_select("Kubernetes clusters in the \"#{project_id}\" project:", choices, per_page: choices.length)
+
+    cluster_name = set(:cluster_name, cluster.name)
+    cluster_region = set(:cluster_region, cluster.region)
   end
 
-  puts "\n·  Connecting to the #{cluster_name} cluster..."
-  system(%( docker-compose run --rm app gcloud container clusters get-credentials #{cluster_name} --region #{cluster_region} --project #{project_id} )) || exit(1)
+  PROMPT.say("\n·  Connecting to the #{cluster_name} cluster...")
+  system(%( gcloud container clusters get-credentials #{cluster_name} --region #{cluster_region} --project #{project_id} 1> /dev/nulls)) || exit(1)
 
   [cluster_name, cluster_region]
 end
 
-def get_k8s_namespace
+Namespace = Struct.new(:name)
+def get_k8s_namespace # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   cluster_name = get(:cluster_name) || get_k8s_cluster[0]
   namespace_name = get(:namespace_name)
 
   return namespace_name if namespace_name
 
-  puts "\n·  Kubernetes namespaces in the \"#{cluster_name}\" cluster:"
-  system(%( docker-compose run --rm app kubectl get namespaces )) || exit(1)
+  namespaces_list = `kubectl get namespaces -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}'` || exit(1)
+  namespaces = namespaces_list.split("\n").map do |line|
+    Namespace.new(line)
+  end
 
-  print 'Namespace Name: '
-  namespace_name = gets.chomp
+  choices = namespaces.map do |namespace|
+    {
+      name: namespace.name,
+      value: namespace
+    }
+  end
+
+  raise "No Kubernetes namespaces in the #{cluster_name} cluster!" if choices.empty?
+
+  namespace = menu_auto_select("Kubernetes namespaces in the \"#{cluster_name}\" cluster:", choices, per_page: choices.length)
+  namespace_name = set(:namespace_name, namespace.name)
 
   set(:namespace_name, namespace_name)
 end
 
-def get_k8s_pods
+Pod = Struct.new(:id)
+def get_k8s_pods # rubocop:disable Metrics/MethodLength
   namespace_name = get(:namespace_name) || get_k8s_namespace
 
-  puts "\n·  Pods in the \"#{namespace_name}\" namespace:"
-  system(%( docker-compose run --rm app kubectl get pods -n #{namespace_name} | grep foreground )) || exit(1)
+  pods_list = `kubectl get pods -n #{namespace_name} -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}' | grep foreground` || exit(1)
+  pods = pods_list.split("\n").map do |line|
+    Pod.new(line)
+  end
 
-  print 'Pod ID: '
-  pod_id = gets.chomp
+  choices = pods.map do |pod|
+    {
+      name: pod.id,
+      value: pod
+    }
+  end
 
-  set(:pod_id, pod_id)
+  raise "No Kubernetes pods in the #{namespace_name} namespace!" if choices.empty?
+
+  pod = menu_auto_select("Pods in the \"#{namespace_name}\" namespace:", choices, per_page: choices.length)
+  set(:pod_id, pod.id)
 end
 
-def get_k8s_container
+Container = Struct.new(:name)
+def get_k8s_container # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   namespace_name = get(:namespace_name) || get_k8s_namespace
   pod_id = get(:pod_id) || get_k8s_pods
 
-  puts "\n·  Containers in the \"#{pod_id}\" pod:"
-  system(%( docker-compose run --rm app kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .spec.containers[*]}{"   · "}{.name}{"\\n"}{end}' )) || exit(1)
+  containers_list = `kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .spec.containers[*]}{.name}{"\\n"}{end}'` || exit(1)
+  containers = containers_list.split("\n").map do |line|
+    Container.new(line)
+  end
 
-  print 'Container: '
-  container_name = gets.chomp
+  choices = containers.map do |container|
+    {
+      name: container.name,
+      value: container
+    }
+  end
 
-  set(:container_name, container_name)
+  raise "No containers in the #{pod_id} pod!" if choices.empty?
+
+  container = menu_auto_select("Containers in the \"#{pod_id}\" pod:", choices, per_page: choices.length)
+  set(:container_name, container.name)
 end
 
 def connect_to_container
@@ -151,8 +212,12 @@ def connect_to_container
   pod_id = get_k8s_pods
   container_name = get_k8s_container
 
-  puts "\n·  Connecting to container \"#{container_name}\" in pod: #{pod_id} ..."
-  system(%( docker-compose run --rm app sh -c "kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} bash" )) || exit(1)
+  command =
+    PROMPT.select('Command to run:', SUGGESTED_COMMANDS, per_page: SUGGESTED_COMMANDS.length) ||
+    PROMPT.ask('Command to run:', required: true)
+
+  PROMPT.ok("\nConnecting...\n")
+  system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} -- #{command} ))
 end
 
 if File.exist?(CONFIG_FILE)

@@ -1,13 +1,19 @@
 .DEFAULT_GOAL := run
-.PHONY: all build run clean vacuum
+.PHONY: all build run shell clean vacuum
 
 all: clean run
 
 build:
-	@ docker-compose up --no-start
+	@ docker-compose build
 
-run: build
-	@ ./gcloud.rb
+config.yml:
+	@ [ -f config.yml ] || touch config.yml
+
+run: config.yml
+	@ docker-compose run --rm app
+
+shell: config.yml
+	@ docker-compose run --rm --entrypoint=/bin/bash app
 
 clean:
 	@ docker-compose down
@@ -16,4 +22,4 @@ clean:
 	@ rm -f config.yml
 
 vacuum: clean
-	@ (docker images | grep cloud-sdk && docker-compose down --rmi all) || true
+	@ (docker images | grep gcr.io/google.com/cloudsdktool/cloud-sdk 1> /dev/null && docker-compose down --rmi all) || true

@@ -2,10 +2,13 @@ version: '3.4'
 
 services:
   app:
-    image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    build:
+      dockerfile: Dockerfile
+      context: .
     volumes:
-    - gcloud_auth:/root/.config
-    - kube_config:/root/.kube
+      - .:/usr/src
+      - gcloud_auth:/root/.config
+      - kube_config:/root/.kube
 
 volumes:
   gcloud_auth: {}
