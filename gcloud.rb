@@ -19,6 +19,24 @@ SUGGESTED_COMMANDS = [
   { name: '(other)', value: nil }
 ].freeze
 
+ACTIONS = [
+  {
+    id: :shell,
+    name: 'Access a command line / console for a container',
+    method: :connect_to_container
+  },
+  {
+    id: :all_containers,
+    name: 'View logs from all containers in a pod',
+    method: :tail_logs_all_containers
+  },
+  {
+    id: :one_container,
+    name: 'View logs from one container in a pod',
+    method: :tail_logs_container
+  }
+].freeze
+
 def config
   YAML.load(File.read(CONFIG_FILE)) || {} # rubocop:disable Security/YAMLLoad
 end
@@ -162,6 +180,21 @@ def get_k8s_namespace # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   set(:namespace_name, namespace_name)
 end
 
+Action = Struct.new(:id, :name, :method)
+def get_action
+  choices = ACTIONS.map { |params| Action.new(*params.values) }.map do |action|
+    {
+      name: action.name,
+      value: action
+    }
+  end
+
+  action = menu_auto_select('Select your desired action:', choices, per_page: choices.length)
+  set(:action, action.id)
+
+  action
+end
+
 Pod = Struct.new(:id)
 def get_k8s_pods # rubocop:disable Metrics/MethodLength
   namespace_name = get(:namespace_name) || get_k8s_namespace
@@ -207,17 +240,38 @@ def get_k8s_container # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   set(:container_name, container.name)
 end
 
-def connect_to_container
-  namespace_name = get(:namespace_name) || get_k8s_namespace
-  pod_id = get_k8s_pods
-  container_name = get_k8s_container
+module Actions
+  module_function
 
-  command =
-    PROMPT.select('Command to run:', SUGGESTED_COMMANDS, per_page: SUGGESTED_COMMANDS.length) ||
-    PROMPT.ask('Command to run:', required: true)
+  def connect_to_container
+    namespace_name = get(:namespace_name) || get_k8s_namespace
+    pod_id = get_k8s_pods
+    container_name = get_k8s_container
 
-  PROMPT.ok("\nConnecting...\n")
-  system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} -- #{command} ))
+    command =
+      PROMPT.select('Command to run:', SUGGESTED_COMMANDS, per_page: SUGGESTED_COMMANDS.length) ||
+      PROMPT.ask('Command to run:', required: true)
+
+    PROMPT.ok("\nConnecting...\n")
+    system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} -- #{command} ))
+  end
+
+  def tail_logs_all_containers
+    namespace_name = get(:namespace_name) || get_k8s_namespace
+    pod_id = get_k8s_pods
+
+    PROMPT.ok("\nConnecting...\n")
+    system(%( kubectl logs -f #{pod_id} -n #{namespace_name} --all-containers ))
+  end
+
+  def tail_logs_container
+    namespace_name = get(:namespace_name) || get_k8s_namespace
+    pod_id = get_k8s_pods
+    container_name = get_k8s_container
+
+    PROMPT.ok("\nConnecting...\n")
+    system(%( kubectl logs -f #{pod_id} -n #{namespace_name} -c #{container_name} ))
+  end
 end
 
 if File.exist?(CONFIG_FILE)
@@ -228,4 +282,4 @@ end
 
 # rubocop:enable all
 
-auth_with_gcloud && connect_to_container
+auth_with_gcloud && Actions.send(get_action.method)
