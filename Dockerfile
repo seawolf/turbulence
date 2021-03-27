@@ -1,3 +1,4 @@
+# match the Ruby version with GitHub Actions workflow:
 FROM ruby:3.0.0-slim
 
 WORKDIR /usr/src
