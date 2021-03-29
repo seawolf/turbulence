@@ -20,11 +20,20 @@ module Turbulence
     def _no_choices(question, opts)
       PROMPT.say("#{question} ")
       PROMPT.error('No choices!')
-      opts[:exit_on_error] ? exit(1) : nil
+
+      _exit if opts[:exit_on_error]
     end
 
     def _many_choices(question, choices, opts)
       PROMPT.select(question, choices, opts)
+    end
+
+    def _exit
+      return RSpec::Turbulence::SystemExit if defined?(RSpec)
+
+      # :nocov:
+      exit(1)
+      # :nocov:
     end
   end
 end
