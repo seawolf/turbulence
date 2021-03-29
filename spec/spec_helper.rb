@@ -99,6 +99,6 @@ RSpec.configure do |config|
   #   Kernel.srand config.seed
 end
 
-require_relative './../turbulence'
-
 Dir.glob('./spec/support/*.rb').map { |f| require f }
+
+require_relative './../turbulence'
