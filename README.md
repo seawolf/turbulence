@@ -37,6 +37,10 @@ This will:
 
 Information entered at each stage will be stored for the next time, up to the pods, though you can start afresh too.
 
+##### Architecture
+
+![Architecture.png](https://user-images.githubusercontent.com/193455/113730435-cf0cba00-96ef-11eb-8b39-466d5fd3c659.png)
+
 
 ##### Clean-Up
 
