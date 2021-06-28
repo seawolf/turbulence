@@ -34,6 +34,11 @@ ACTIONS = [
     id: :one_container,
     name: 'View logs from one container in a pod',
     method: :tail_logs_container
+  },
+  {
+    id: :restart_deployment,
+    name: 'Restart a deployment of container(s)',
+    method_name: :restart_deployment
   }
 ].freeze
 
@@ -240,6 +245,28 @@ def get_k8s_container # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   set(:container_name, container.name)
 end
 
+Deployment = Struct.new(:name)
+def get_k8s_deployments # rubocop:disable Metrics/MethodLength
+  namespace_name = get(:namespace_name) || get_k8s_namespace
+
+  deployments_list = `kubectl get deployments -n #{namespace_name} -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}'` || exit(1)
+  deployments = deployments_list.split("\n").map do |line|
+    Deployment.new(line)
+  end
+
+  choices = deployments.map do |deployment|
+    {
+      name: deployment.name,
+      value: deployment
+    }
+  end
+
+  raise "No deployments in the #{namespace_name} namespace!" if choices.empty?
+
+  deployment = menu_auto_select("Deployments in the \"#{namespace_name}\" namespace:", choices, per_page: choices.length)
+  set(:deployment_name, deployment.name)
+end
+
 module Actions
   module_function
 
@@ -271,6 +298,15 @@ module Actions
 
     PROMPT.ok("\nConnecting...\n")
     system(%( kubectl logs -f #{pod_id} -n #{namespace_name} -c #{container_name} ))
+  end
+
+  def restart_deployment
+    namespace_name = get(:namespace_name) || get_k8s_namespace
+    deployment_name = get_k8s_deployments
+
+    PROMPT.ok("\nRestarting...\n")
+    system(%( kubectl rollout restart -n #{namespace_name} deployment/#{deployment_name} ))
+    PROMPT.ok('Please allow some time for the restart to complete.')
   end
 end
 
