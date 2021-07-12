@@ -21,33 +21,6 @@ module Turbulence
 
     module_function
 
-    Namespace = Struct.new(:name)
-    def get_k8s_namespace # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-      cluster_name = Config.get(:cluster_name) || get_k8s_cluster[0]
-      namespace_name = Config.get(:namespace_name)
-
-      return namespace_name if namespace_name
-
-      namespaces_list = `kubectl get namespaces -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}'` || exit(1)
-      namespaces = namespaces_list.split("\n").map do |line|
-        Namespace.new(line)
-      end
-
-      choices = namespaces.map do |namespace|
-        {
-          name: namespace.name,
-          value: namespace
-        }
-      end
-
-      raise "No Kubernetes namespaces in the #{cluster_name} cluster!" if choices.empty?
-
-      namespace = Menu.auto_select("Kubernetes namespaces in the \"#{cluster_name}\" cluster:", choices, per_page: choices.length)
-      namespace_name = Config.set(:namespace_name, namespace.name)
-
-      Config.set(:namespace_name, namespace_name)
-    end
-
     Action = Struct.new(:id, :name, :class_name) do
       def to_choice
         {
