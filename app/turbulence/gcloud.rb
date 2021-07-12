@@ -21,41 +21,6 @@ module Turbulence
 
     module_function
 
-    Cluster = Struct.new(:name, :region)
-    def get_k8s_cluster # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-      unless (project_id = Config.get(:project_id))
-        get_gcloud_project
-        project_id = Config.get(:project_id)
-      end
-
-      unless (cluster_name = Config.get(:cluster_name) && cluster_region = Config.get(:cluster_region))
-        clusters_list = `gcloud container clusters list --format="value(name, zone)"` || exit(1)
-        clusters = clusters_list.split("\n").map do |line|
-          segments = line.split(/\s+/)
-          Cluster.new(*segments)
-        end
-
-        choices = clusters.map do |cluster|
-          {
-            name: "#{cluster.name} (#{cluster.region})",
-            value: cluster
-          }
-        end
-
-        raise "No Kubernetes clusters in the #{project_id} project! (It may be only a Cloud Run project.)" if choices.empty?
-
-        cluster = Menu.auto_select("Kubernetes clusters in the \"#{project_id}\" project:", choices, per_page: choices.length)
-
-        cluster_name = Config.set(:cluster_name, cluster.name)
-        cluster_region = Config.set(:cluster_region, cluster.region)
-      end
-
-      PROMPT.say("\n·  Connecting to the #{cluster_name} cluster...")
-      system(%( gcloud container clusters get-credentials #{cluster_name} --region #{cluster_region} --project #{project_id} 1> /dev/nulls)) || exit(1)
-
-      [cluster_name, cluster_region]
-    end
-
     Namespace = Struct.new(:name)
     def get_k8s_namespace # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
       cluster_name = Config.get(:cluster_name) || get_k8s_cluster[0]
