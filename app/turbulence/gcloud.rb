@@ -10,8 +10,6 @@ module Turbulence
   module GCloud # rubocop:disable Metrics/ModuleLength
     PROMPT = Menu::PROMPT
 
-    AUTH_COMMAND = 'gcloud auth login'
-    LIST_COMMAND = 'gcloud auth list 2> /dev/null | grep \\*'
     SUGGESTED_COMMANDS = [
       '/bin/bash',
       '/bin/sh',
@@ -22,13 +20,6 @@ module Turbulence
     ].freeze
 
     module_function
-
-    def auth_with_gcloud
-      PROMPT.say("\n·  Authenticating with Google Cloud...")
-      system(%{ (#{LIST_COMMAND}) || ((#{AUTH_COMMAND}) && (#{LIST_COMMAND})) }) || exit(1)
-
-      Config.set(:last_auth, Time.now.to_i)
-    end
 
     Project = Struct.new(:id, :name)
     def get_gcloud_project # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
