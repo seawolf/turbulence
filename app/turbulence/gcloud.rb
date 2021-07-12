@@ -21,29 +21,6 @@ module Turbulence
       { name: '(other)', value: nil }
     ].freeze
 
-    ACTIONS = [
-      {
-        id: :shell,
-        name: 'Access a command line / console for a container',
-        method_name: :connect_to_container
-      },
-      {
-        id: :all_containers,
-        name: 'View logs from all containers in a pod',
-        method_name: :tail_logs_all_containers
-      },
-      {
-        id: :one_container,
-        name: 'View logs from one container in a pod',
-        method_name: :tail_logs_container
-      },
-      {
-        id: :restart_deployment,
-        name: 'Restart a deployment of container(s)',
-        method_name: :restart_deployment
-      }
-    ].freeze
-
     module_function
 
     def auth_with_gcloud
@@ -143,19 +120,23 @@ module Turbulence
       Config.set(:namespace_name, namespace_name)
     end
 
-    Action = Struct.new(:id, :name, :method_name)
-    def get_action
-      choices = ACTIONS.map { |params| Action.new(*params.values) }.map do |action|
+    Action = Struct.new(:id, :name, :class_name) do
+      def to_choice
         {
-          name: action.name,
-          value: action
+          name: name,
+          value: self
         }
       end
+    end
+    def action
+      choices = Actions::LIST
+                .map { |action| Action.new(action::ID, action::NAME, action) }
+                .map(&:to_choice)
 
       action = Menu.auto_select('Select your desired action:', choices, per_page: choices.length)
       Config.set(:action, action.id)
 
-      action
+      action.class_name
     end
 
     Pod = Struct.new(:id)
@@ -225,36 +206,6 @@ module Turbulence
       Config.set(:deployment_name, deployment.name)
     end
 
-    def connect_to_container
-      namespace_name = Config.get(:namespace_name) || get_k8s_namespace
-      pod_id = get_k8s_pods
-      container_name = get_k8s_container
-
-      command =
-        PROMPT.select('Command to run:', SUGGESTED_COMMANDS, per_page: SUGGESTED_COMMANDS.length) ||
-        PROMPT.ask('Command to run:', required: true)
-
-      PROMPT.ok("\nConnecting...\n")
-      system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} -- #{command} ))
-    end
-
-    def tail_logs_all_containers
-      namespace_name = Config.get(:namespace_name) || get_k8s_namespace
-      pod_id = get_k8s_pods
-
-      PROMPT.ok("\nConnecting...\n")
-      system(%( kubectl logs -f #{pod_id} -n #{namespace_name} --all-containers ))
-    end
-
-    def tail_logs_container
-      namespace_name = Config.get(:namespace_name) || get_k8s_namespace
-      pod_id = get_k8s_pods
-      container_name = get_k8s_container
-
-      PROMPT.ok("\nConnecting...\n")
-      system(%( kubectl logs -f #{pod_id} -n #{namespace_name} -c #{container_name} ))
-    end
-
     # rubocop:enable all
 
     def go!
@@ -264,7 +215,7 @@ module Turbulence
         Config.init_config!
       end
 
-      auth_with_gcloud && send(get_action.method_name)
+      auth_with_gcloud && action.new
     end
 
     go! unless defined?(RSpec)
