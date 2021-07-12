@@ -46,28 +46,6 @@ module Turbulence
 
     module_function
 
-    def init_config? # rubocop:disable Metrics/MethodLength
-      if (project_id = Config.get(:project_id)) &&
-         (namespace_name = Config.get(:namespace_name)) &&
-         (cluster_name = Config.get(:cluster_name)) &&
-         (cluster_region = Config.get(:cluster_region))
-        PROMPT.say <<~ENDOFMSG
-          ·  You have previously run this to connect to:
-            · project: #{project_id}
-            · cluster: #{cluster_name} [#{cluster_region}]
-            · namespace: #{namespace_name}
-        ENDOFMSG
-
-        choices = [
-          { name: 'Yes', value: false },
-          { name: 'No', value: true }
-        ]
-        return Menu.auto_select('Would you like to keep this selection?', choices)
-      end
-
-      true
-    end
-
     def auth_with_gcloud
       PROMPT.say("\n·  Authenticating with Google Cloud...")
       system(%{ (#{LIST_COMMAND}) || ((#{AUTH_COMMAND}) && (#{LIST_COMMAND})) }) || exit(1)
@@ -281,7 +259,7 @@ module Turbulence
 
     def go!
       if File.exist?(Config::CONFIG_FILE)
-        init_config? && Config.init_config!
+        ConfigHelper.init_config? && Config.init_config!
       else
         Config.init_config!
       end
