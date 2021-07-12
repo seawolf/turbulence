@@ -9,6 +9,15 @@ module Turbulence
         NAME = 'Access a command line / console for a container'
         METHOD_NAME = :connect_to_container
 
+        SUGGESTED_COMMANDS = [
+          '/bin/bash',
+          '/bin/sh',
+          'bundle exec rails console',
+          'bundle exec irb',
+
+          { name: '(other)', value: nil }
+        ].freeze
+
         def initialize
           namespace_name = Config.get(:namespace_name) || get_k8s_namespace
           pod_id = get_k8s_pods

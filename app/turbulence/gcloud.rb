@@ -1,27 +1,14 @@
 # frozen_string_literal: true
 
-# rubocop:disable Layout/LineLength, Naming/AccessorMethodName
-
 require_relative 'menu'
 require 'yaml'
 
 module Turbulence
   # Connector for Google Cloud
-  module GCloud # rubocop:disable Metrics/ModuleLength
+  module GCloud
     PROMPT = Menu::PROMPT
 
-    SUGGESTED_COMMANDS = [
-      '/bin/bash',
-      '/bin/sh',
-      'bundle exec rails console',
-      'bundle exec irb',
-
-      { name: '(other)', value: nil }
-    ].freeze
-
     module_function
-
-    # rubocop:enable all
 
     def go!
       if File.exist?(Config::CONFIG_FILE)
@@ -30,7 +17,7 @@ module Turbulence
         Config.init_config!
       end
 
-      auth_with_gcloud && action.new
+      Auth.new && Action.new
     end
 
     go! unless defined?(RSpec)
