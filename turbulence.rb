@@ -2,6 +2,10 @@
 
 require 'zeitwerk'
 
+Dir.glob('lib/**/*.rb').sort.map do |f|
+  require_relative f
+end
+
 Zeitwerk::Loader.new.tap do |loader|
   loader.push_dir('app')
 
