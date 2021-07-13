@@ -18,17 +18,21 @@ module Turbulence
           { name: '(other)', value: nil }
         ].freeze
 
-        def initialize
-          namespace_name = Config.get(:namespace_name) || get_k8s_namespace
-          pod_id = get_k8s_pods
-          container_name = get_k8s_container
+        def initialize # rubocop:disable Metrics/AbcSize
+          namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
+          namespace = GCloud::Resources::Namespace.select unless namespace.valid?
+
+          pod = GCloud::Resources::Pod.from(Config.get(:pod_id))
+          pod = GCloud::Resources::Pod.select unless pod.valid?
+
+          container = GCloud::Resources::Container.select
 
           command =
             PROMPT.select('Command to run:', SUGGESTED_COMMANDS, per_page: SUGGESTED_COMMANDS.length) ||
             PROMPT.ask('Command to run:', required: true)
 
           PROMPT.ok("\nConnecting...\n")
-          system(%( kubectl exec -it #{pod_id} -n #{namespace_name} -c #{container_name} -- #{command} ))
+          system(%( kubectl exec -it #{pod.id} -n #{namespace.name} -c #{container.name} -- #{command} ))
         end
       end
     end

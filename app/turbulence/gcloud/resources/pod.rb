@@ -5,28 +5,39 @@ module Turbulence
     module Resources
       # Google Cloud Pod
       class Pod
-        def initialize # rubocop:disable Metrics/MethodLength
-          namespace_name = Config.get(:namespace_name) || get_k8s_namespace
+        def self.select # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+          namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
+          namespace = GCloud::Resources::Namespace.select unless namespace.valid?
 
-          pods_list = `kubectl get pods -n #{namespace_name} -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}' | grep foreground` || exit(1) # rubocop:disable Metrics/LineLength
+          pods_list = `kubectl get pods -n #{namespace.name} -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}' | grep foreground` || exit(1) # rubocop:disable Layout/LineLength
           pods = pods_list.split("\n").map do |line|
             Pod.new(line)
           end
 
-          choices = pods.map do |pod|
+          choices = pods.map do |p|
             {
-              name: pod.id,
-              value: pod
+              name: p.id,
+              value: p
             }
           end
 
-          raise "No Kubernetes pods in the #{namespace_name} namespace!" if choices.empty?
+          raise "No Kubernetes pods in the #{namespace.name} namespace!" if choices.empty?
 
-          pod = Menu.auto_select("Pods in the \"#{namespace_name}\" namespace:", choices, per_page: choices.length)
+          pod = Menu.auto_select("Pods in the \"#{namespace.name}\" namespace:", choices, per_page: choices.length)
           Config.set(:pod_id, pod.id)
+
+          pod
         end
 
-        Pod = Struct.new(:id)
+        def self.from(id)
+          Pod.new(id)
+        end
+
+        Pod = Struct.new(:id) do
+          def valid?
+            id.present?
+          end
+        end
       end
     end
   end

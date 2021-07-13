@@ -6,16 +6,18 @@ module Turbulence
     module ConfigHelper
       module_function
 
-      def init_config? # rubocop:disable Metrics/MethodLength
-        if (project_id = Config.get(:project_id)) &&
-           (namespace_name = Config.get(:namespace_name)) &&
-           (cluster_name = Config.get(:cluster_name)) &&
-           (cluster_region = Config.get(:cluster_region))
+      def init_config? # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+        project = GCloud::Resources::Project.from(Config.get(:project_id))
+        namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
+        cluster = GCloud::Resources::Cluster.from(Config.get(:cluster_name), Config.get(:cluster_region))
+        able_to_connect = project.valid? && namespace.valid? && cluster.valid?
+
+        if able_to_connect
           PROMPT.say <<~ENDOFMSG
             ·  You have previously run this to connect to:
-              · project: #{project_id}
-              · cluster: #{cluster_name} [#{cluster_region}]
-              · namespace: #{namespace_name}
+              · project: #{project.id}
+              · cluster: #{cluster.name} [#{cluster.region}]
+              · namespace: #{namespace.name}
           ENDOFMSG
 
           choices = [

@@ -5,29 +5,42 @@ module Turbulence
     module Resources
       # Google Cloud Container
       class Container
-        def initialize # rubocop:disable Metrics/MethodLength
-          namespace_name = Config.get(:namespace_name) || get_k8s_namespace
-          pod_id = Config.get(:pod_id) || get_k8s_pods
+        def self.select # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+          namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
+          namespace = GCloud::Resources::Namespace.select unless namespace.valid?
 
-          containers_list = `kubectl get pods -n #{namespace_name} #{pod_id} -o jsonpath='{range .spec.containers[*]}{.name}{"\\n"}{end}'` || exit(1)
+          pod = GCloud::Resources::Pod.from(Config.get(:pod_id))
+          pod = GCloud::Resources::Pod.select unless pod.valid?
+
+          containers_list = `kubectl get pods -n #{namespace.name} #{pod.id} -o jsonpath='{range .spec.containers[*]}{.name}{"\\n"}{end}'` || exit(1) # rubocop:disable Layout/LineLength
           containers = containers_list.split("\n").map do |line|
             Container.new(line)
           end
 
-          choices = containers.map do |container|
+          choices = containers.map do |c|
             {
-              name: container.name,
-              value: container
+              name: c.name,
+              value: c
             }
           end
 
-          raise "No containers in the #{pod_id} pod!" if choices.empty?
+          raise "No containers in the #{pod.id} pod!" if choices.empty?
 
-          container = Menu.auto_select("Containers in the \"#{pod_id}\" pod:", choices, per_page: choices.length)
+          container = Menu.auto_select("Containers in the \"#{pod.id}\" pod:", choices, per_page: choices.length)
           Config.set(:container_name, container.name)
+
+          container
         end
 
-        Container = Struct.new(:name)
+        def self.from(name)
+          Container.new(name)
+        end
+
+        Container = Struct.new(:name) do
+          def valid?
+            name.present?
+          end
+        end
       end
     end
   end

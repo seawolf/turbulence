@@ -10,11 +10,14 @@ module Turbulence
         METHOD_NAME = :tail_logs_all_containers
 
         def initialize
-          namespace_name = Config.get(:namespace_name) || get_k8s_namespace
-          pod_id = get_k8s_pods
+          namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
+          namespace = GCloud::Resources::Namespace.select unless namespace.valid?
+
+          pod = GCloud::Resources::Pod.from(Config.get(:pod_id))
+          pod = GCloud::Resources::Pod.select unless pod.valid?
 
           PROMPT.ok("\nConnecting...\n")
-          system(%( kubectl logs -f #{pod_id} -n #{namespace_name} --all-containers ))
+          system(%( kubectl logs -f #{pod.id} -n #{namespace.name} --all-containers ))
         end
       end
     end

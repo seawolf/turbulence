@@ -10,11 +10,13 @@ module Turbulence
         METHOD_NAME = :restart_deployment
 
         def initialize
-          namespace_name = get(:namespace_name) || get_k8s_namespace
-          deployment_name = get_k8s_deployments
+          namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
+          namespace = GCloud::Resources::Namespace.select unless namespace.valid?
+
+          deployment = GCloud::Resources::Deployment.select
 
           PROMPT.ok("\nRestarting...\n")
-          system(%( kubectl rollout restart -n #{namespace_name} deployment/#{deployment_name} ))
+          system(%( kubectl rollout restart -n #{namespace.name} deployment/#{deployment.name} ))
           PROMPT.ok('Please allow some time for the restart to complete.')
         end
       end

@@ -4,6 +4,8 @@ AllCops:
 Metrics/BlockLength:
   Exclude:
     - spec/**/*_spec.rb
+
 Style/Documentation:
   Exclude:
     - lib/core_ext/*.rb
+    - spec/support/*.rb

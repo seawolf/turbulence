@@ -5,34 +5,44 @@ module Turbulence
     module Resources
       # Google Cloud Namespace
       class Namespace
-        def initialize # rubocop:disable Metrics/MethodLength
-          cluster_name = Config.get(:cluster_name) || get_k8s_cluster[0]
-          namespace_name = Config.get(:namespace_name)
+        def self.select # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+          cluster = GCloud::Resources::Cluster.from(Config.get(:cluster_name), Config.get(:cluster_region))
+          cluster = GCloud::Resources::Cluster.select unless cluster.valid?
 
-          return namespace_name if namespace_name
+          namespace = from(Config.get(:namespace_name))
+          return namespace if namespace.valid?
 
-          namespaces_list = `kubectl get namespaces -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}'` || exit(1)
+          namespaces_list = `kubectl get namespaces -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}'` || exit(1) # rubocop:disable Layout/LineLength
           namespaces = namespaces_list.split("\n").map do |line|
             Namespace.new(line)
           end
 
-          choices = namespaces.map do |namespace|
+          choices = namespaces.map do |n|
             {
-              name: namespace.name,
-              value: namespace
+              name: n.name,
+              value: n
             }
           end
 
-          raise "No Kubernetes namespaces in the #{cluster_name} cluster!" if choices.empty?
+          raise "No Kubernetes namespaces in the #{cluster.name} cluster!" if choices.empty?
 
-          namespace = Menu.auto_select("Kubernetes namespaces in the \"#{cluster_name}\" cluster:", choices,
+          namespace = Menu.auto_select("Kubernetes namespaces in the \"#{cluster.name}\" cluster:", choices,
                                        per_page: choices.length)
-          namespace_name = Config.set(:namespace_name, namespace.name)
 
-          Config.set(:namespace_name, namespace_name)
+          Config.set(:namespace_name, namespace.name)
+
+          namespace
         end
 
-        Namespace = Struct.new(:name)
+        def self.from(name)
+          Namespace.new(name)
+        end
+
+        Namespace = Struct.new(:name) do
+          def valid?
+            name.present?
+          end
+        end
       end
     end
   end
