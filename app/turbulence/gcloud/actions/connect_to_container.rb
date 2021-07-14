@@ -9,6 +9,18 @@ module Turbulence
         NAME = 'Access a command line / console for a container'
         METHOD_NAME = :connect_to_container
 
+        def initialize
+          namespace
+          pod
+          container
+          command
+
+          PROMPT.ok("\nConnecting...\n")
+          connect
+        end
+
+        private
+
         SUGGESTED_COMMANDS = [
           '/bin/bash',
           '/bin/sh',
@@ -18,21 +30,42 @@ module Turbulence
           { name: '(other)', value: nil }
         ].freeze
 
-        def initialize # rubocop:disable Metrics/AbcSize
-          namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
-          namespace = GCloud::Resources::Namespace.select unless namespace.valid?
+        def namespace
+          return @namespace if defined?(@namespace)
 
-          pod = GCloud::Resources::Pod.from(Config.get(:pod_id))
-          pod = GCloud::Resources::Pod.select unless pod.valid?
+          @namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
+          @namespace = GCloud::Resources::Namespace.select unless @namespace.valid?
 
-          container = GCloud::Resources::Container.select
+          @namespace
+        end
 
-          command =
+        def pod
+          return @pod if defined?(@pod)
+
+          @pod = GCloud::Resources::Pod.from(Config.get(:pod_id))
+          @pod = GCloud::Resources::Pod.select unless pod.valid?
+
+          @pod
+        end
+
+        def container
+          @container ||= GCloud::Resources::Container.select
+        end
+
+        def command
+          return @command if defined?(@command)
+
+          @command =
             PROMPT.select('Command to run:', SUGGESTED_COMMANDS, per_page: SUGGESTED_COMMANDS.length) ||
             PROMPT.ask('Command to run:', required: true)
+        end
 
-          PROMPT.ok("\nConnecting...\n")
-          system(%( kubectl exec -it #{pod.id} -n #{namespace.name} -c #{container.name} -- #{command} ))
+        def connection
+          "kubectl exec -it #{pod.id} -n #{namespace.name} -c #{container.name} -- #{command}"
+        end
+
+        def connect
+          system(connection)
         end
       end
     end
