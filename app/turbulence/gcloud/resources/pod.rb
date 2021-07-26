@@ -5,10 +5,7 @@ module Turbulence
     module Resources
       # Google Cloud Pod
       class Pod
-        def self.select # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-          namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
-          namespace = GCloud::Resources::Namespace.select unless namespace.valid?
-
+        def self.select(namespace) # rubocop:disable Metrics/MethodLength
           pods_list = `kubectl get pods -n #{namespace.name} -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}' | grep foreground` || exit(1) # rubocop:disable Layout/LineLength
           pods = pods_list.split("\n").map do |line|
             Pod.new(line)

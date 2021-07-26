@@ -9,29 +9,15 @@ module Turbulence
         NAME = 'View logs from all containers in a pod'
         METHOD_NAME = :tail_logs_all_containers
 
+        include ActionResources
+
         def initialize
+          project
+          cluster
           namespace
           pod
 
           connect
-        end
-
-        def namespace
-          return @namespace if defined?(@namespace)
-
-          @namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
-          @namespace = GCloud::Resources::Namespace.select unless @namespace.valid?
-
-          @namespace
-        end
-
-        def pod
-          return @pod if defined?(@pod)
-
-          @pod = GCloud::Resources::Pod.from(Config.get(:pod_id))
-          @pod = GCloud::Resources::Pod.select unless @pod.valid?
-
-          @pod
         end
 
         def connection

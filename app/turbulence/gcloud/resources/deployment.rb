@@ -5,10 +5,7 @@ module Turbulence
     module Resources
       # Google Cloud Deployment
       class Deployment
-        def self.select # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-          namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
-          namespace = GCloud::Resources::Namespace.select unless namespace.valid?
-
+        def self.select(namespace) # rubocop:disable Metrics/MethodLength
           deployments_list = `kubectl get deployments -n #{namespace.name} -o jsonpath='{range .items[*]}{.metadata.name}{"\\n"}{end}'` || exit(1) # rubocop:disable Layout/LineLength
           deployments = deployments_list.split("\n").map do |line|
             Deployment.new(line)

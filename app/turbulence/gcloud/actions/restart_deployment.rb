@@ -9,7 +9,11 @@ module Turbulence
         NAME = 'Restart a deployment of container(s)'
         METHOD_NAME = :restart_deployment
 
+        include ActionResources
+
         def initialize
+          project
+          cluster
           namespace
           deployment
 
@@ -19,19 +23,6 @@ module Turbulence
         end
 
         private
-
-        def namespace
-          return @namespace if defined?(@namespace)
-
-          @namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
-          @namespace = GCloud::Resources::Namespace.select unless @namespace.valid?
-
-          @namespace
-        end
-
-        def deployment
-          @deployment = GCloud::Resources::Deployment.select
-        end
 
         def connection
           "kubectl rollout restart -n #{namespace.name} deployment/#{deployment.name}"

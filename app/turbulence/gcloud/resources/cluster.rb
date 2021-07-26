@@ -5,10 +5,7 @@ module Turbulence
     module Resources
       # Google Cloud Cluster
       class Cluster
-        def self.select # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
-          project = GCloud::Resources::Project.from(Config.get(:project_id))
-          project = GCloud::Resources::Project.select unless project.valid?
-
+        def self.select(project) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           cluster = from(Config.get(:cluster_name), Config.get(:cluster_region))
           unless cluster.valid?
             clusters_list = `gcloud container clusters list --format="value(name, zone)"` || exit(1)

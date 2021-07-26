@@ -9,7 +9,11 @@ module Turbulence
         NAME = 'Access a command line / console for a container'
         METHOD_NAME = :connect_to_container
 
+        include ActionResources
+
         def initialize
+          project
+          cluster
           namespace
           pod
           container
@@ -29,28 +33,6 @@ module Turbulence
 
           { name: '(other)', value: nil }
         ].freeze
-
-        def namespace
-          return @namespace if defined?(@namespace)
-
-          @namespace = GCloud::Resources::Namespace.from(Config.get(:namespace_name))
-          @namespace = GCloud::Resources::Namespace.select unless @namespace.valid?
-
-          @namespace
-        end
-
-        def pod
-          return @pod if defined?(@pod)
-
-          @pod = GCloud::Resources::Pod.from(Config.get(:pod_id))
-          @pod = GCloud::Resources::Pod.select unless pod.valid?
-
-          @pod
-        end
-
-        def container
-          @container ||= GCloud::Resources::Container.select
-        end
 
         def command
           return @command if defined?(@command)

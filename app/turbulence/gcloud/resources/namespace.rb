@@ -5,10 +5,7 @@ module Turbulence
     module Resources
       # Google Cloud Namespace
       class Namespace
-        def self.select # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-          cluster = GCloud::Resources::Cluster.from(Config.get(:cluster_name), Config.get(:cluster_region))
-          cluster = GCloud::Resources::Cluster.select unless cluster.valid?
-
+        def self.select(cluster) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           namespace = from(Config.get(:namespace_name))
           return namespace if namespace.valid?
 
