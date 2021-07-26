@@ -17,7 +17,7 @@ module Turbulence
         Config.init_config!
       end
 
-      Auth.new && Action.new
+      Auth.new.check! && Action.new
     end
 
     go! unless defined?(RSpec)
