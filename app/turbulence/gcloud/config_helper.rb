@@ -24,6 +24,7 @@ module Turbulence
             { name: 'Yes', value: false },
             { name: 'No', value: true }
           ]
+
           return Menu.auto_select('Would you like to keep this selection?', choices)
         end
 
