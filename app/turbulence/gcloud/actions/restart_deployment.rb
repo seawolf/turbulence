@@ -7,7 +7,6 @@ module Turbulence
       class RestartDeployment
         ID = :restart_deployment
         NAME = 'Restart a deployment of container(s)'
-        METHOD_NAME = :restart_deployment
 
         include ActionResources
 

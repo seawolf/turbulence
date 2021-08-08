@@ -7,7 +7,6 @@ module Turbulence
       class TailLogsSingleContainer
         ID = :one_container
         NAME = 'View logs from one container in a pod'
-        METHOD_NAME = :tail_logs_single_container
 
         include ActionResources
 

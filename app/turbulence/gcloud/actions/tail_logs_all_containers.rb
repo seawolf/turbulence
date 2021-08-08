@@ -7,7 +7,6 @@ module Turbulence
       class TailLogsAllContainers
         ID = :all_containers
         NAME = 'View logs from all containers in a pod'
-        METHOD_NAME = :tail_logs_all_containers
 
         include ActionResources
 

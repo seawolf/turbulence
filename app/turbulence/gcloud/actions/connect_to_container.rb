@@ -7,7 +7,6 @@ module Turbulence
       class ConnectToContainer
         ID = :shell
         NAME = 'Access a command line / console for a container'
-        METHOD_NAME = :connect_to_container
 
         include ActionResources
 
