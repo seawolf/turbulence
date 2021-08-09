@@ -8,7 +8,7 @@ module Turbulence
         action = Menu.auto_select('Select your desired action:', choices, per_page: choices.length)
         Config.set(:action, action.id)
 
-        action.class_name.new
+        action.class_name.new.run
       end
 
       private

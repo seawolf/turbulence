@@ -10,12 +10,13 @@ module Turbulence
 
         include ActionResources
 
-        def initialize
+        def run
           project
           cluster
           namespace
           pod
 
+          PROMPT.ok("\nConnecting...\n")
           connect
         end
 
@@ -24,7 +25,6 @@ module Turbulence
         end
 
         def connect
-          PROMPT.ok("\nConnecting...\n")
           system(connection)
         end
       end

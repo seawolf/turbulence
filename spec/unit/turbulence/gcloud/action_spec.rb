@@ -3,14 +3,21 @@
 describe Turbulence::GCloud::Action do
   let(:action) { action_adaptor.new }
   let(:action_adaptors) { [action_adaptor] }
-
   let(:action_adaptor) do
-    klass = Class.new do
-      def id; end
+    klass = Class.new(Object) do
+      def id
+        self.class::ID
+      end
+
+      def name
+        self.class::NAME
+      end
 
       def class_name
         self.class
       end
+
+      def run; end
     end
 
     klass.const_set(:ID, 'action-id')
@@ -25,6 +32,7 @@ describe Turbulence::GCloud::Action do
 
   after do
     allow(Turbulence::Menu).to receive(:auto_select).and_return(action)
+    allow(action_adaptor).to receive(:new).once.and_return(action)
 
     subject
   end
@@ -47,10 +55,10 @@ describe Turbulence::GCloud::Action do
   end
 
   it 'remembers the choice' do
-    expect(Turbulence::Config).to receive(:set).with(:action, action.id).once
+    expect(Turbulence::Config).to receive(:set).with(:action, 'action-id').once
   end
 
   it 'starts the selected choice' do
-    expect(action_adaptor).to receive(:new).once.and_return(action)
+    expect(action).to receive(:run).once
   end
 end

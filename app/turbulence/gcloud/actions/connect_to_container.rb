@@ -10,7 +10,7 @@ module Turbulence
 
         include ActionResources
 
-        def initialize
+        def run
           project
           cluster
           namespace
