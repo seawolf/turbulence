@@ -51,8 +51,8 @@ module Turbulence
 
         def projects
           projects_list.split("\n").map do |line|
-            segments = line.split(/\s+/)
-            Project.new(segments[0], segments[1..-1].join(' '))
+            id, *name_segments = line.split
+            Project.new(id, name_segments.join(' '))
           end
         end
 
@@ -65,6 +65,8 @@ module Turbulence
           `gcloud config set project #{project.id} 1> /dev/null`.tap do |result|
             result || exit(1)
           end
+
+          project
         end
         # :nocov:
 
