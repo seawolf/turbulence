@@ -43,7 +43,7 @@ module Turbulence
 
         # :nocov:
         def projects_list
-          system(PROJECTS_LIST_COMMAND).tap do |result|
+          `#{PROJECTS_LIST_COMMAND}`.tap do |result|
             result || exit(1)
           end
         end

@@ -52,7 +52,7 @@ module Turbulence
         end
 
         def deployments_list
-          system(deployments_list_command).tap do |result|
+          `#{deployments_list_command}`.tap do |result|
             result || exit(1)
           end
         end

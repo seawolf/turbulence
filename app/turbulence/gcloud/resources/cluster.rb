@@ -54,7 +54,7 @@ module Turbulence
 
         # :nocov:
         def clusters_list
-          system(clusters_list_command).tap do |result|
+          `#{CLUSTERS_LIST_COMMAND}`.tap do |result|
             result || exit(1)
           end
         end
@@ -72,12 +72,16 @@ module Turbulence
         end
 
         # :nocov:
-        def activate
-          PROMPT.say("\n·  Connecting to the #{cluster.name} cluster...")
-          system("gcloud container clusters get-credentials #{cluster.name}"\
+        def activate_command
+          "gcloud container clusters get-credentials #{cluster.name}"\
             " --region #{cluster.region}"\
             " --project #{project.id}"\
-            ' 1> /dev/null').tap do |result|
+            ' 1> /dev/null'
+        end
+
+        def activate
+          PROMPT.say("\n·  Connecting to the #{cluster.name} cluster...")
+          `#{activate_command}`.tap do |result|
             result || exit(1)
           end
 

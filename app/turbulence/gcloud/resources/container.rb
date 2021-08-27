@@ -51,7 +51,7 @@ module Turbulence
         end
 
         def containers_list
-          system(containers_list_command).tap do |result|
+          `#{containers_list_command}`.tap do |result|
             result || exit(1)
           end
         end

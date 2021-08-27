@@ -54,7 +54,7 @@ module Turbulence
 
         # :nocov:
         def namespaces_list
-          system(NAMESPACES_LIST_COMMAND).tap do |result|
+          `#{NAMESPACES_LIST_COMMAND}`.tap do |result|
             result || exit(1)
           end
         end
