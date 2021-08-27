@@ -20,11 +20,11 @@ module Turbulence
         end
 
         def fetch
-          if choices.empty?
-            raise "No Kubernetes clusters in the #{project.id} project! (It may be only a Cloud Run project.)"
-          end
-
           @cluster = cached_cluster do
+            if choices.empty?
+              raise "No Kubernetes clusters in the #{project.id} project! (It may be only a Cloud Run project.)"
+            end
+
             Menu.auto_select("Kubernetes clusters in the \"#{project.id}\" project:", choices,
                              per_page: choices.length)
           end
