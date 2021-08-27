@@ -30,17 +30,17 @@ describe Turbulence::GCloud do
 
         subject
       end
+    end
 
-      context 'when a valid config file exists' do
-        before do
-          allow(Turbulence::GCloud::ConfigHelper).to receive(:init_config?).and_return(false)
-        end
+    context 'when a valid config file exists' do
+      before do
+        allow(Turbulence::GCloud::ConfigHelper).to receive(:init_config?).and_return(false)
+      end
 
-        it 'does not initialise the config' do
-          expect(Turbulence::Config).not_to receive(:init_config!)
+      it 'does not initialise the config' do
+        expect(Turbulence::Config).not_to receive(:init_config!)
 
-          subject
-        end
+        subject
       end
     end
   end
