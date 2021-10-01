@@ -7,7 +7,8 @@ module Turbulence
         ConnectToContainer,
         TailLogsSingleContainer,
         TailLogsAllContainers,
-        RestartDeployment
+        RestartDeployment,
+        DestroyNamespace
       ].freeze
     end
   end
