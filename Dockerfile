@@ -1,3 +1,4 @@
+# match the Ruby version with GitHub Actions workflow:
 FROM ruby:3.0.0-slim
 
 WORKDIR /usr/src
@@ -34,6 +35,6 @@ RUN gem install bundler
 COPY Gemfile Gemfile.lock /usr/src/
 RUN bundle install
 
-COPY gcloud.rb lib /usr/src/
+COPY app /usr/src/
 COPY config.yml /usr/src
-ENTRYPOINT ["bash", "-lc", "bundle exec ruby gcloud.rb"]
+ENTRYPOINT ["bash", "-lc", "bundle exec ruby turbulence.rb"]

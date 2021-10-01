@@ -2,6 +2,8 @@
 
 Tools to help you connect to Google Cloud pods.
 
+[![GitHub CI](https://github.com/seawolf/turbulence/actions/workflows/ruby.yml/badge.svg)](https://github.com/seawolf/turbulence/actions/workflows/ruby.yml)
+
 ### Rationale
 
 You can point you web browser to https://console.cloud.google.com and click your way to your
