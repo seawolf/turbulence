@@ -47,18 +47,26 @@ module Turbulence
             '{.metadata.name}'\
             '{"\n"}'\
             '{end}'\
-            "' | grep foreground"
+            "'"
+        end
+
+        def all_pods_list
+          `#{pods_list_command}`
+        end
+
+        def foreground_pods_list
+          `#{pods_list_command} | grep foreground`
         end
 
         def pods_list
-          `#{pods_list_command}`.tap do |result|
-            result || exit(1)
-          end
+          foreground_pods_list.split("\n").presence ||
+            all_pods_list.split("\n").presence ||
+            exit(1)
         end
         # :nocov:
 
         def pods
-          pods_list.split("\n").map do |line|
+          pods_list.map do |line|
             Pod.new(line)
           end
         end

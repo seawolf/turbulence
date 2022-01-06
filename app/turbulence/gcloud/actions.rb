@@ -5,6 +5,7 @@ module Turbulence
     module Actions
       LIST = [
         ConnectToContainer,
+        AttachToContainer,
         TailLogsSingleContainer,
         TailLogsAllContainers,
         RestartDeployment,
