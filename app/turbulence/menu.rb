@@ -13,7 +13,7 @@ module Turbulence
       if choices.empty?
         _no_choices(question, opts.merge(auto_select: true))
       else
-        _many_choices(question, choices, opts.merge(auto_select: true))
+        _many_choices(question, choices, opts.merge(auto_select: true, per_page: TTY::Screen.height - 4, filter: true))
       end
     end
 

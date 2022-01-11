@@ -50,7 +50,7 @@ module Turbulence
         # :nocov:
 
         def projects
-          projects_list.split("\n").map do |line|
+          projects_list.split("\n").sort.map do |line|
             id, *name_segments = line.split
             Project.new(id, name_segments.join(' '))
           end
