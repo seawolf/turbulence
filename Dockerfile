@@ -1,6 +1,8 @@
 # match the Ruby version with GitHub Actions workflow:
 FROM ruby:3.0.0-slim
 
+EXPOSE 25863
+
 WORKDIR /usr/src
 
 #####

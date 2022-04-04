@@ -8,6 +8,7 @@ module Turbulence
         AttachToContainer,
         TailLogsSingleContainer,
         TailLogsAllContainers,
+        ForwardPort,
         RestartDeployment,
         DestroyNamespace
       ].freeze

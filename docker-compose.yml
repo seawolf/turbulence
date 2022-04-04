@@ -9,6 +9,8 @@ services:
       - .:/usr/src
       - gcloud_auth:/root/.config
       - kube_config:/root/.kube
+    ports:
+    - '25683:25683' # phoneword for CLOUD
 
 volumes:
   gcloud_auth: {}
