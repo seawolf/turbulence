@@ -35,7 +35,7 @@ module Turbulence
         def pod_port
           raise "No ports exposed by the #{pod.id} pod!" if pod_ports.list.empty?
 
-          Menu.auto_select("Ports exposed by the the \"#{pod.id}\" pod:", pod_ports.choices,
+          Menu.auto_select("Ports exposed by the \"#{pod.id}\" pod:", pod_ports.choices,
                            per_page: pod_ports.list.length)
         end
 
