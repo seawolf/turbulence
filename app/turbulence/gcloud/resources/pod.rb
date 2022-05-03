@@ -54,14 +54,8 @@ module Turbulence
           `#{pods_list_command}`
         end
 
-        def foreground_pods_list
-          `#{pods_list_command} | grep foreground`
-        end
-
         def pods_list
-          foreground_pods_list.split("\n").presence ||
-            all_pods_list.split("\n").presence ||
-            exit(1)
+          all_pods_list.split("\n").presence || exit(1)
         end
         # :nocov:
 
