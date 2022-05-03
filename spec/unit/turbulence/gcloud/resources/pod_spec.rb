@@ -39,7 +39,6 @@ describe Turbulence::GCloud::Resources::Pod do
 
     shared_examples :fetching_and_selecting_a_pod do
       before do
-        allow(instance).to receive(:foreground_pods_list).and_return('')
         allow(instance).to receive(:all_pods_list).and_return(pods_list.join("\n"))
         allow(Turbulence::Menu).to receive(:auto_select).and_return(pod)
       end
