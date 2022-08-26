@@ -24,7 +24,8 @@ RUN curl https://sdk.cloud.google.com > /tmp/install-gcloud &&\
 
 RUN echo "source /root/google-cloud-sdk/completion.bash.inc" >> /root/.bashrc
 RUN echo "source /root/google-cloud-sdk/path.bash.inc" >> /root/.bashrc
-RUN bash -lc "gcloud components install kubectl"
+RUN echo "export USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> /root/.bashrc
+RUN bash -lc "gcloud components install kubectl gke-gcloud-auth-plugin"
 
 #####
 # Configure Ruby and co.
