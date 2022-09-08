@@ -12,7 +12,7 @@ WORKDIR /usr/src
 RUN apt-get update && apt-get install -y \
     curl \
     git \
-    python
+    python3
 
 RUN curl https://sdk.cloud.google.com > /tmp/install-gcloud &&\
     chmod +x /tmp/install-gcloud &&\
