@@ -43,11 +43,11 @@ module Turbulence
 
         # :nocov:
         def deployments_list_command
-          "kubectl get deployments -n #{namespace.name} -o jsonpath='"\
-            '{range .items[*]}'\
-            '{.metadata.name}'\
-            '{"\n"}'\
-            '{end}'\
+          "kubectl get deployments -n #{namespace.name} -o jsonpath='" \
+            '{range .items[*]}' \
+            '{.metadata.name}' \
+            '{"\n"}' \
+            '{end}' \
             "'"
         end
 

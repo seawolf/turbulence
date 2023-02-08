@@ -16,7 +16,7 @@ module Turbulence
           namespace
 
           confirmation = confirm
-          confirmation && destroy || bail_out
+          (confirmation && destroy) || bail_out
 
           confirmation
         end

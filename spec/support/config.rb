@@ -17,6 +17,6 @@ RSpec.configure do |config|
   end
 
   config.after(:all) do
-    File.delete(RSpec::Turbulence::TEST_CONFIG_FILE) if File.exist?(RSpec::Turbulence::TEST_CONFIG_FILE)
+    FileUtils.rm_f(RSpec::Turbulence::TEST_CONFIG_FILE)
   end
 end

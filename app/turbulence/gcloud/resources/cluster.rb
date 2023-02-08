@@ -73,10 +73,10 @@ module Turbulence
 
         # :nocov:
         def activate_command
-          "gcloud container clusters get-credentials #{cluster.name}"\
-            " --region #{cluster.region}"\
-            " --project #{project.id}"\
-            ' 1> /dev/null'
+          "gcloud container clusters get-credentials #{cluster.name} " \
+            "--region #{cluster.region} " \
+            "--project #{project.id} " \
+            '1> /dev/null'
         end
 
         def activate
