@@ -34,10 +34,11 @@ describe Turbulence::GCloud::Resources::Pod do
 
   describe '#fetch' do
     subject { instance.fetch }
+
     let(:pods_list) { %w[pod-1 pod-2 pod-3] }
     let(:pod) { described_class::Pod.new(pods_list.sample) }
 
-    shared_examples :fetching_and_selecting_a_pod do
+    shared_examples 'fetching and selecting a pod' do
       before do
         allow(instance).to receive(:all_pods_list).and_return(pods_list.join("\n"))
         allow(Turbulence::Menu).to receive(:auto_select).and_return(pod)
@@ -59,7 +60,7 @@ describe Turbulence::GCloud::Resources::Pod do
     end
 
     context 'without having previously-selected a pod' do
-      include_examples :fetching_and_selecting_a_pod
+      include_examples 'fetching and selecting a pod'
     end
 
     context 'having previously-selected a pod' do
@@ -67,7 +68,7 @@ describe Turbulence::GCloud::Resources::Pod do
         allow(Turbulence::Config).to receive(:get).with(:pod_id).and_return(pod.id)
       end
 
-      include_examples :fetching_and_selecting_a_pod
+      include_examples 'fetching and selecting a pod'
     end
   end
 end

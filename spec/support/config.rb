@@ -7,7 +7,7 @@ module RSpec
 end
 
 RSpec.configure do |config|
-  config.before(:each) do |test|
+  config.before do |test|
     stub_const('::Turbulence::Config::CONFIG_FILE', RSpec::Turbulence::TEST_CONFIG_FILE)
 
     unless test.metadata[:empty_config]

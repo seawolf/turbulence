@@ -35,10 +35,11 @@ describe Turbulence::GCloud::Resources::Container do
 
   describe '#fetch' do
     subject { instance.fetch }
+
     let(:containers_list) { %w[container-1 container-2 container-3] }
     let(:container) { described_class::Container.new(containers_list.sample) }
 
-    shared_examples :fetching_and_selecting_a_container do
+    shared_examples 'fetching and selecting a container' do
       before do
         allow(instance).to receive(:containers_list).and_return(containers_list.join("\n"))
         allow(Turbulence::Menu).to receive(:auto_select).and_return(container)
@@ -60,7 +61,7 @@ describe Turbulence::GCloud::Resources::Container do
     end
 
     context 'without having previously-selected a container' do
-      include_examples :fetching_and_selecting_a_container
+      include_examples 'fetching and selecting a container'
     end
 
     context 'having previously-selected a container' do
@@ -68,7 +69,7 @@ describe Turbulence::GCloud::Resources::Container do
         allow(Turbulence::Config).to receive(:get).with(:container_name).and_return(container.name)
       end
 
-      include_examples :fetching_and_selecting_a_container
+      include_examples 'fetching and selecting a container'
     end
   end
 end

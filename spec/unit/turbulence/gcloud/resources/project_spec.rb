@@ -33,6 +33,7 @@ describe Turbulence::GCloud::Resources::Project do
 
   describe '#fetch' do
     subject { instance.fetch }
+
     let(:projects_name_list) { ['My First Project', 'My Second Project', 'My Third Project'] }
     let(:projects_id_list) { %w[project-1 project-2 project-3] }
     let(:projects_list) { projects_id_list.zip(projects_name_list).map { |pair| pair.join(' ') } }

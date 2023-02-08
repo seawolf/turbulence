@@ -34,10 +34,11 @@ describe Turbulence::GCloud::Resources::Namespace do
 
   describe '#fetch' do
     subject { instance.fetch }
+
     let(:namespaces_list) { %w[namespace-1 namespace-2 namespace-3] }
     let(:namespace) { described_class::Namespace.new(namespaces_list.sample) }
 
-    shared_examples :fetching_and_selecting_a_namespace do
+    shared_examples 'fetching and selecting a namespace' do
       before do
         allow(instance).to receive(:namespaces_list).and_return(namespaces_list.join("\n"))
         allow(Turbulence::Menu).to receive(:auto_select).and_return(namespace)
@@ -59,7 +60,7 @@ describe Turbulence::GCloud::Resources::Namespace do
     end
 
     context 'without having previously-selected a namespace' do
-      include_examples :fetching_and_selecting_a_namespace
+      include_examples 'fetching and selecting a namespace'
     end
 
     context 'having previously-selected a namespace' do
@@ -67,7 +68,7 @@ describe Turbulence::GCloud::Resources::Namespace do
         allow(Turbulence::Config).to receive(:get).with(:namespace_name).and_return(namespace.name)
       end
 
-      include_examples :fetching_and_selecting_a_namespace
+      include_examples 'fetching and selecting a namespace'
     end
   end
 end

@@ -35,6 +35,7 @@ describe Turbulence::GCloud::Resources::Cluster do
 
   describe '#fetch' do
     subject { instance.fetch }
+
     let(:clusters_name_list) { %w[cluster-1 cluster-2 cluster-3] }
     let(:clusters_region_list) { %w[region-1 region-2 region-3] }
     let(:clusters_list) { clusters_name_list.zip(clusters_region_list).map { |pair| pair.join(' ') } }

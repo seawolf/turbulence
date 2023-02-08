@@ -245,7 +245,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'is cached' do
-        expect(Turbulence::GCloud::Resources::Pod).to_not receive(:select)
+        expect(Turbulence::GCloud::Resources::Pod).not_to receive(:select)
 
         expect(subject).to eq(pod)
       end
@@ -276,7 +276,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'is cached' do
-        expect(Turbulence::GCloud::Resources::Deployment).to_not receive(:select)
+        expect(Turbulence::GCloud::Resources::Deployment).not_to receive(:select)
 
         expect(subject).to eq(deployment)
       end
@@ -313,7 +313,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'is cached' do
-        expect(Turbulence::GCloud::Resources::Container).to_not receive(:select)
+        expect(Turbulence::GCloud::Resources::Container).not_to receive(:select)
 
         expect(subject).to eq(container)
       end

@@ -34,10 +34,11 @@ describe Turbulence::GCloud::Resources::Deployment do
 
   describe '#fetch' do
     subject { instance.fetch }
+
     let(:deployments_list) { %w[deployment-1 deployment-2 deployment-3] }
     let(:deployment) { described_class::Deployment.new(deployments_list.sample) }
 
-    shared_examples :fetching_and_selecting_a_deployment do
+    shared_examples 'fetching and selecting a deployment' do
       before do
         allow(instance).to receive(:deployments_list).and_return(deployments_list.join("\n"))
         allow(Turbulence::Menu).to receive(:auto_select).and_return(deployment)
@@ -59,7 +60,7 @@ describe Turbulence::GCloud::Resources::Deployment do
     end
 
     context 'without having previously-selected a deployment' do
-      include_examples :fetching_and_selecting_a_deployment
+      include_examples 'fetching and selecting a deployment'
     end
 
     context 'having previously-selected a deployment' do
@@ -67,7 +68,7 @@ describe Turbulence::GCloud::Resources::Deployment do
         allow(Turbulence::Config).to receive(:get).with(:deployment_name).and_return(deployment.name)
       end
 
-      include_examples :fetching_and_selecting_a_deployment
+      include_examples 'fetching and selecting a deployment'
     end
   end
 end
