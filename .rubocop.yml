@@ -12,3 +12,6 @@ Style/Documentation:
   Exclude:
     - lib/core_ext/*.rb
     - spec/support/*.rb
+
+RSpec/NamedSubject:
+  Enabled: false
