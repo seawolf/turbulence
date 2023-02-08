@@ -42,11 +42,11 @@ module Turbulence
 
         # :nocov:
         def pods_list_command
-          "kubectl get pods -n #{namespace.name} -o jsonpath='"\
-            '{range .items[*]}'\
-            '{.metadata.name}'\
-            '{"\n"}'\
-            '{end}'\
+          "kubectl get pods -n #{namespace.name} -o jsonpath='" \
+            '{range .items[*]}' \
+            '{.metadata.name}' \
+            '{"\n"}' \
+            '{end}' \
             "'"
         end
 

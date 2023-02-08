@@ -41,10 +41,10 @@ module Turbulence
           # :nocov:
 
           def connection
-            "kubectl get pod -n #{namespace.name} #{pod.id} "\
-                "--template='"\
-                  '{{(index (index .spec.containers 0).ports 0).containerPort}}{{"\n"}}'\
-                  "'"
+            "kubectl get pod -n #{namespace.name} #{pod.id} " \
+              "--template='" \
+              '{{(index (index .spec.containers 0).ports 0).containerPort}}{{"\n"}}' \
+              "'"
           end
         end
       end

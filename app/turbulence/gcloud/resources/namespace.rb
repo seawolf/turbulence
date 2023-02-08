@@ -31,11 +31,11 @@ module Turbulence
         private
 
         NAMESPACES_LIST_COMMAND = "kubectl get namespaces -o jsonpath='" \
-              '{range .items[*]}'\
-              '{.metadata.name}'\
-              '{"\n"}'\
-              '{end}'\
-              "'"
+                                  '{range .items[*]}' \
+                                  '{.metadata.name}' \
+                                  '{"\n"}' \
+                                  '{end}' \
+                                  "'"
 
         attr_reader :cluster
         attr_writer :namespace

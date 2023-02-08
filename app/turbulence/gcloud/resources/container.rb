@@ -43,10 +43,10 @@ module Turbulence
 
         # :nocov:
         def containers_list_command
-          "kubectl get pods -n #{namespace.name} #{pod.id} -o jsonpath='"\
-            '{range .spec.containers[*]}{.name}'\
-            '{"\n"}'\
-            '{end}'\
+          "kubectl get pods -n #{namespace.name} #{pod.id} -o jsonpath='" \
+            '{range .spec.containers[*]}{.name}' \
+            '{"\n"}' \
+            '{end}' \
             "'"
         end
 
