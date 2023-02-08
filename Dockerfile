@@ -35,8 +35,11 @@ RUN bash -lc "gcloud components install kubectl gke-gcloud-auth-plugin"
 RUN echo 'gem: --no-document' > /etc/gemrc
 RUN gem install bundler
 
+# `build-essential` is needed for building the `json` gem, used in development
+RUN apt-get install -y build-essential
 COPY Gemfile Gemfile.lock /usr/src/
 RUN bundle install
+RUN apt-get autoremove -y build-essential
 
 COPY app /usr/src/
 COPY config.yml /usr/src
