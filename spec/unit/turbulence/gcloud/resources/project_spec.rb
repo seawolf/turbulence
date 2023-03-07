@@ -74,9 +74,6 @@ describe Turbulence::GCloud::Resources::Project do
     context 'with a pre-selected project' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:project_id).and_return(project.id)
-      end
-
-      before do
         allow(instance).to receive(:activate).and_return(project)
         allow(Turbulence::Menu).to receive(:auto_select).and_return(project)
       end
