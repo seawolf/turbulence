@@ -2,7 +2,7 @@
 
 describe Turbulence::GCloud::Resources::Deployment do
   let(:instance) { described_class.new(namespace) }
-  let(:namespace) { double(:namespace, name: 'my-namespace') }
+  let(:namespace) { instance_double(Turbulence::GCloud::Resources::Namespace::Namespace, name: 'my-namespace') }
 
   describe '.select' do
     subject { described_class.select(namespace) }
@@ -25,7 +25,7 @@ describe Turbulence::GCloud::Resources::Deployment do
   describe '.from' do
     subject { described_class.from(deployment_name) }
 
-    let(:deployment_name) { double(:deployment_name) }
+    let(:deployment_name) { object_double(String, :deployment_name) }
 
     it 'creates a Deployment with the given attributes' do
       expect(subject).to have_attributes({ name: deployment_name })

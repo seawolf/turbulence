@@ -24,7 +24,7 @@ describe Turbulence::GCloud::Resources::Project do
   describe '.from' do
     subject { described_class.from(project_id) }
 
-    let(:project_id) { double(:project_id) }
+    let(:project_id) { object_double(String, :project_id) }
 
     it 'creates a Project with the given attributes' do
       expect(subject).to have_attributes({ id: project_id })

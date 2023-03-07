@@ -2,7 +2,7 @@
 
 describe Turbulence::GCloud::Resources::Cluster do
   let(:instance) { described_class.new(project) }
-  let(:project) { double(:project, id: 'my-project') }
+  let(:project) { instance_double(Turbulence::GCloud::Resources::Project::Project, id: 'my-project') }
 
   describe '.select' do
     subject { described_class.select(project) }
@@ -25,8 +25,8 @@ describe Turbulence::GCloud::Resources::Cluster do
   describe '.from' do
     subject { described_class.from(cluster_name, cluster_region) }
 
-    let(:cluster_name) { double(:cluster_name) }
-    let(:cluster_region) { double(:cluster_region) }
+    let(:cluster_name) { object_double(String, :cluster_name) }
+    let(:cluster_region) { object_double(String, :cluster_region) }
 
     it 'creates a Cluster with the given attributes' do
       expect(subject).to have_attributes({ name: cluster_name, region: cluster_region })

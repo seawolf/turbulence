@@ -33,8 +33,8 @@ describe Turbulence::GCloud::Auth do
 
     context 'when the authentication is successful' do
       let(:auth_successful) { true }
-      let(:the_time) { double(:time, to_i: the_time_value) }
-      let(:the_time_value) { double(:integer) }
+      let(:the_time) { instance_double(Time, to_i: the_time_value) }
+      let(:the_time_value) { instance_double(Integer) }
 
       before do
         allow(Time).to receive(:now).and_return(the_time)

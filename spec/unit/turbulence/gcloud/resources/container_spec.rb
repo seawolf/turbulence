@@ -2,8 +2,8 @@
 
 describe Turbulence::GCloud::Resources::Container do
   let(:instance) { described_class.new(namespace, pod) }
-  let(:namespace) { double(:namespace, name: 'my-namespace') }
-  let(:pod) { double(:pod, id: 'my-pod') }
+  let(:namespace) { instance_double(Turbulence::GCloud::Resources::Namespace::Namespace, name: 'my-namespace') }
+  let(:pod) { instance_double(Turbulence::GCloud::Resources::Pod::Pod, id: 'my-pod') }
 
   describe '.select' do
     subject { described_class.select(namespace, pod) }
@@ -26,7 +26,7 @@ describe Turbulence::GCloud::Resources::Container do
   describe '.from' do
     subject { described_class.from(container_name) }
 
-    let(:container_name) { double(:container_name) }
+    let(:container_name) { object_double(String, :container_name) }
 
     it 'creates a Container with the given attributes' do
       expect(subject).to have_attributes({ name: container_name })

@@ -2,7 +2,7 @@
 
 describe Turbulence::GCloud::Resources::Namespace do
   let(:instance) { described_class.new(cluster) }
-  let(:cluster) { double(:cluster, name: 'my-cluster') }
+  let(:cluster) { instance_double(Turbulence::GCloud::Resources::Cluster::Cluster, name: 'my-cluster') }
 
   describe '.select' do
     subject { described_class.select(cluster) }
@@ -25,7 +25,7 @@ describe Turbulence::GCloud::Resources::Namespace do
   describe '.from' do
     subject { described_class.from(namespace_name) }
 
-    let(:namespace_name) { double(:namespace_name) }
+    let(:namespace_name) { object_double(String, :namespace_name) }
 
     it 'creates a Namespace with the given attributes' do
       expect(subject).to have_attributes({ name: namespace_name })
