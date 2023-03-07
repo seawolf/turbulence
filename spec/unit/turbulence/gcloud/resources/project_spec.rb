@@ -43,7 +43,7 @@ describe Turbulence::GCloud::Resources::Project do
       described_class::Project.new(id)
     end
 
-    context 'without having previously-selected a project' do
+    context 'without a pre-selected project' do
       before do
         allow(instance).to receive(:projects_list).and_return(projects_list.join("\n"))
         allow(instance).to receive(:activate).and_return(project)
@@ -71,7 +71,7 @@ describe Turbulence::GCloud::Resources::Project do
       end
     end
 
-    context 'having previously-selected a project' do
+    context 'with a pre-selected project' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:project_id).and_return(project.id)
       end

@@ -59,11 +59,11 @@ describe Turbulence::GCloud::Resources::Namespace do
       end
     end
 
-    context 'without having previously-selected a namespace' do
+    context 'without a pre-selected namespace' do
       include_examples 'fetching and selecting a namespace'
     end
 
-    context 'having previously-selected a namespace' do
+    context 'with a pre-selected namespace' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:namespace_name).and_return(namespace.name)
       end

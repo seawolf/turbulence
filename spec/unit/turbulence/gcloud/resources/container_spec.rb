@@ -60,11 +60,11 @@ describe Turbulence::GCloud::Resources::Container do
       end
     end
 
-    context 'without having previously-selected a container' do
+    context 'without a pre-selected container' do
       include_examples 'fetching and selecting a container'
     end
 
-    context 'having previously-selected a container' do
+    context 'with a pre-selected container' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:container_name).and_return(container.name)
       end

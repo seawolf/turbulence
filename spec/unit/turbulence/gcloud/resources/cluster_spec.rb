@@ -45,7 +45,7 @@ describe Turbulence::GCloud::Resources::Cluster do
       described_class::Cluster.new(cluster_name, cluster_region)
     end
 
-    context 'without having previously-selected a cluster' do
+    context 'without a pre-selected cluster' do
       before do
         allow(instance).to receive(:clusters_list).and_return(clusters_list.join("\n"))
         allow(instance).to receive(:activate).and_return(cluster)
@@ -72,7 +72,7 @@ describe Turbulence::GCloud::Resources::Cluster do
         expect(instance.cluster).to eq(cluster)
       end
 
-      context 'having selected a project with no clusters' do
+      context 'when the selected project has no clusters' do
         let(:clusters_list) { [] }
 
         it 'cannot continue' do
@@ -81,7 +81,7 @@ describe Turbulence::GCloud::Resources::Cluster do
       end
     end
 
-    context 'having previously-selected a cluster' do
+    context 'with a pre-selected cluster' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:cluster_name).and_return(cluster.name)
         allow(Turbulence::Config).to receive(:get).with(:cluster_region).and_return(cluster.region)

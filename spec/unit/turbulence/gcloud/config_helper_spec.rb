@@ -60,7 +60,7 @@ describe Turbulence::GCloud::ConfigHelper do
       end
     end
 
-    context 'a project is missing' do
+    context 'when a project is missing' do
       let(:project_data) do
         double(:project_data, {
                  id: nil, name: nil

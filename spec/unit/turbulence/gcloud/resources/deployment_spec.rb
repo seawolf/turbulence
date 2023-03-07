@@ -59,11 +59,11 @@ describe Turbulence::GCloud::Resources::Deployment do
       end
     end
 
-    context 'without having previously-selected a deployment' do
+    context 'without a pre-selected deployment' do
       include_examples 'fetching and selecting a deployment'
     end
 
-    context 'having previously-selected a deployment' do
+    context 'with a pre-selected deployment' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:deployment_name).and_return(deployment.name)
       end

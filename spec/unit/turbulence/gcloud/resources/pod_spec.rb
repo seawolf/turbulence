@@ -59,11 +59,11 @@ describe Turbulence::GCloud::Resources::Pod do
       end
     end
 
-    context 'without having previously-selected a pod' do
+    context 'without a pre-selected pod' do
       include_examples 'fetching and selecting a pod'
     end
 
-    context 'having previously-selected a pod' do
+    context 'with a pre-selected pod' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:pod_id).and_return(pod.id)
       end
