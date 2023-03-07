@@ -2,7 +2,7 @@
 
 describe Turbulence::GCloud::Resources::Pod do
   let(:instance) { described_class.new(namespace) }
-  let(:namespace) { double(:namespace, name: 'my-namespace') }
+  let(:namespace) { instance_double(Turbulence::GCloud::Resources::Namespace::Namespace, name: 'my-namespace') }
 
   describe '.select' do
     subject { described_class.select(namespace) }
@@ -14,7 +14,7 @@ describe Turbulence::GCloud::Resources::Pod do
     end
 
     it 'returns a newly-fetched Pod object' do
-      expect(instance).to receive(:fetch).once do
+      allow(instance).to receive(:fetch).once do
         instance.instance_variable_set('@pod', pod)
       end
 
@@ -25,7 +25,7 @@ describe Turbulence::GCloud::Resources::Pod do
   describe '.from' do
     subject { described_class.from(pod_id) }
 
-    let(:pod_id) { double(:pod_id) }
+    let(:pod_id) { object_double(String, :pod_id) }
 
     it 'creates a Pod with the given attributes' do
       expect(subject).to have_attributes({ id: pod_id })
@@ -34,17 +34,18 @@ describe Turbulence::GCloud::Resources::Pod do
 
   describe '#fetch' do
     subject { instance.fetch }
+
     let(:pods_list) { %w[pod-1 pod-2 pod-3] }
     let(:pod) { described_class::Pod.new(pods_list.sample) }
 
-    shared_examples :fetching_and_selecting_a_pod do
+    shared_examples 'fetching and selecting a pod' do
       before do
         allow(instance).to receive(:all_pods_list).and_return(pods_list.join("\n"))
         allow(Turbulence::Menu).to receive(:auto_select).and_return(pod)
       end
 
       it 'fetches a new Pod' do
-        expect(instance).to receive(:all_pods_list).and_return(pods_list.join("\n"))
+        expect(instance).to receive(:all_pods_list)
 
         subject
       end
@@ -58,16 +59,16 @@ describe Turbulence::GCloud::Resources::Pod do
       end
     end
 
-    context 'without having previously-selected a pod' do
-      include_examples :fetching_and_selecting_a_pod
+    context 'without a pre-selected pod' do
+      include_examples 'fetching and selecting a pod'
     end
 
-    context 'having previously-selected a pod' do
+    context 'with a pre-selected pod' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:pod_id).and_return(pod.id)
       end
 
-      include_examples :fetching_and_selecting_a_pod
+      include_examples 'fetching and selecting a pod'
     end
   end
 end

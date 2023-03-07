@@ -24,7 +24,7 @@ describe Turbulence::GCloud::ActionResources do
         expect(subject).to eq(project)
       end
 
-      context 'and having been accessed before' do
+      context 'when previously-accessed' do
         before do
           allow(Turbulence::GCloud::Resources::Project).to receive(:select).once.and_return(project)
 
@@ -65,7 +65,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'asks which project should be used' do
-        expect(Turbulence::GCloud::Resources::Project).to receive(:select).and_return(project)
+        expect(Turbulence::GCloud::Resources::Project).to receive(:select).once.and_return(project)
 
         expect(subject).to eq(project)
       end
@@ -98,7 +98,7 @@ describe Turbulence::GCloud::ActionResources do
         expect(subject).to eq(cluster)
       end
 
-      context 'and having been accessed before' do
+      context 'when previously accessed' do
         before do
           allow(Turbulence::GCloud::Resources::Cluster).to receive(:select).with(project).once.and_return(cluster)
 
@@ -173,7 +173,7 @@ describe Turbulence::GCloud::ActionResources do
         expect(subject).to eq(namespace)
       end
 
-      context 'and having been accessed before' do
+      context 'when previously-accessed' do
         before do
           allow(Turbulence::GCloud::Resources::Namespace).to receive(:select).with(cluster).once.and_return(namespace)
 
@@ -214,7 +214,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'asks which namespace should be used' do
-        expect(Turbulence::GCloud::Resources::Namespace).to receive(:select).with(cluster).and_return(namespace)
+        expect(Turbulence::GCloud::Resources::Namespace).to receive(:select).with(cluster).once.and_return(namespace)
 
         expect(subject).to eq(namespace)
       end
@@ -237,7 +237,7 @@ describe Turbulence::GCloud::ActionResources do
       expect(subject).to eq(pod)
     end
 
-    context 'and having been accessed before' do
+    context 'when previously-accessed' do
       before do
         allow(Turbulence::GCloud::Resources::Pod).to receive(:select).with(namespace).once.and_return(pod)
 
@@ -245,7 +245,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'is cached' do
-        expect(Turbulence::GCloud::Resources::Pod).to_not receive(:select)
+        expect(Turbulence::GCloud::Resources::Pod).not_to receive(:select)
 
         expect(subject).to eq(pod)
       end
@@ -268,7 +268,7 @@ describe Turbulence::GCloud::ActionResources do
       expect(subject).to eq(deployment)
     end
 
-    context 'and having been accessed before' do
+    context 'when previously-accessed' do
       before do
         allow(Turbulence::GCloud::Resources::Deployment).to receive(:select).with(namespace).once.and_return(deployment)
 
@@ -276,7 +276,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'is cached' do
-        expect(Turbulence::GCloud::Resources::Deployment).to_not receive(:select)
+        expect(Turbulence::GCloud::Resources::Deployment).not_to receive(:select)
 
         expect(subject).to eq(deployment)
       end
@@ -304,7 +304,7 @@ describe Turbulence::GCloud::ActionResources do
       expect(subject).to eq(container)
     end
 
-    context 'and having been accessed before' do
+    context 'when previously-accessed' do
       before do
         allow(Turbulence::GCloud::Resources::Container).to receive(:select).with(namespace,
                                                                                  pod).once.and_return(container)
@@ -313,7 +313,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'is cached' do
-        expect(Turbulence::GCloud::Resources::Container).to_not receive(:select)
+        expect(Turbulence::GCloud::Resources::Container).not_to receive(:select)
 
         expect(subject).to eq(container)
       end

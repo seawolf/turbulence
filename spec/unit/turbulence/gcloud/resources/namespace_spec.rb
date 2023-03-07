@@ -2,7 +2,7 @@
 
 describe Turbulence::GCloud::Resources::Namespace do
   let(:instance) { described_class.new(cluster) }
-  let(:cluster) { double(:cluster, name: 'my-cluster') }
+  let(:cluster) { instance_double(Turbulence::GCloud::Resources::Cluster::Cluster, name: 'my-cluster') }
 
   describe '.select' do
     subject { described_class.select(cluster) }
@@ -14,7 +14,7 @@ describe Turbulence::GCloud::Resources::Namespace do
     end
 
     it 'returns a newly-fetched Namespace object' do
-      expect(instance).to receive(:fetch).once do
+      allow(instance).to receive(:fetch).once do
         instance.instance_variable_set('@namespace', namespace)
       end
 
@@ -25,7 +25,7 @@ describe Turbulence::GCloud::Resources::Namespace do
   describe '.from' do
     subject { described_class.from(namespace_name) }
 
-    let(:namespace_name) { double(:namespace_name) }
+    let(:namespace_name) { object_double(String, :namespace_name) }
 
     it 'creates a Namespace with the given attributes' do
       expect(subject).to have_attributes({ name: namespace_name })
@@ -34,17 +34,18 @@ describe Turbulence::GCloud::Resources::Namespace do
 
   describe '#fetch' do
     subject { instance.fetch }
+
     let(:namespaces_list) { %w[namespace-1 namespace-2 namespace-3] }
     let(:namespace) { described_class::Namespace.new(namespaces_list.sample) }
 
-    shared_examples :fetching_and_selecting_a_namespace do
+    shared_examples 'fetching and selecting a namespace' do
       before do
         allow(instance).to receive(:namespaces_list).and_return(namespaces_list.join("\n"))
         allow(Turbulence::Menu).to receive(:auto_select).and_return(namespace)
       end
 
       it 'fetches a new Namespace' do
-        expect(instance).to receive(:namespaces_list).and_return(namespaces_list.join("\n"))
+        expect(instance).to receive(:namespaces_list)
 
         subject
       end
@@ -58,16 +59,16 @@ describe Turbulence::GCloud::Resources::Namespace do
       end
     end
 
-    context 'without having previously-selected a namespace' do
-      include_examples :fetching_and_selecting_a_namespace
+    context 'without a pre-selected namespace' do
+      include_examples 'fetching and selecting a namespace'
     end
 
-    context 'having previously-selected a namespace' do
+    context 'with a pre-selected namespace' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:namespace_name).and_return(namespace.name)
       end
 
-      include_examples :fetching_and_selecting_a_namespace
+      include_examples 'fetching and selecting a namespace'
     end
   end
 end

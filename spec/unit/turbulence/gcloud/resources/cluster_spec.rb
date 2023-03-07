@@ -2,7 +2,7 @@
 
 describe Turbulence::GCloud::Resources::Cluster do
   let(:instance) { described_class.new(project) }
-  let(:project) { double(:project, id: 'my-project') }
+  let(:project) { instance_double(Turbulence::GCloud::Resources::Project::Project, id: 'my-project') }
 
   describe '.select' do
     subject { described_class.select(project) }
@@ -14,7 +14,7 @@ describe Turbulence::GCloud::Resources::Cluster do
     end
 
     it 'returns a newly-fetched Cluster object' do
-      expect(instance).to receive(:fetch).once do
+      allow(instance).to receive(:fetch).once do
         instance.instance_variable_set('@cluster', cluster)
       end
 
@@ -25,8 +25,8 @@ describe Turbulence::GCloud::Resources::Cluster do
   describe '.from' do
     subject { described_class.from(cluster_name, cluster_region) }
 
-    let(:cluster_name) { double(:cluster_name) }
-    let(:cluster_region) { double(:cluster_region) }
+    let(:cluster_name) { object_double(String, :cluster_name) }
+    let(:cluster_region) { object_double(String, :cluster_region) }
 
     it 'creates a Cluster with the given attributes' do
       expect(subject).to have_attributes({ name: cluster_name, region: cluster_region })
@@ -35,6 +35,7 @@ describe Turbulence::GCloud::Resources::Cluster do
 
   describe '#fetch' do
     subject { instance.fetch }
+
     let(:clusters_name_list) { %w[cluster-1 cluster-2 cluster-3] }
     let(:clusters_region_list) { %w[region-1 region-2 region-3] }
     let(:clusters_list) { clusters_name_list.zip(clusters_region_list).map { |pair| pair.join(' ') } }
@@ -44,7 +45,7 @@ describe Turbulence::GCloud::Resources::Cluster do
       described_class::Cluster.new(cluster_name, cluster_region)
     end
 
-    context 'without having previously-selected a cluster' do
+    context 'without a pre-selected cluster' do
       before do
         allow(instance).to receive(:clusters_list).and_return(clusters_list.join("\n"))
         allow(instance).to receive(:activate).and_return(cluster)
@@ -52,13 +53,13 @@ describe Turbulence::GCloud::Resources::Cluster do
       end
 
       it 'fetches a new Cluster' do
-        expect(instance).to receive(:clusters_list).and_return(clusters_list.join("\n"))
+        expect(instance).to receive(:clusters_list)
 
         subject
       end
 
       it 'activates the selected Cluster' do
-        expect(instance).to receive(:activate).and_return(cluster)
+        expect(instance).to receive(:activate)
 
         subject
       end
@@ -71,7 +72,7 @@ describe Turbulence::GCloud::Resources::Cluster do
         expect(instance.cluster).to eq(cluster)
       end
 
-      context 'having selected a project with no clusters' do
+      context 'when the selected project has no clusters' do
         let(:clusters_list) { [] }
 
         it 'cannot continue' do
@@ -80,7 +81,7 @@ describe Turbulence::GCloud::Resources::Cluster do
       end
     end
 
-    context 'having previously-selected a cluster' do
+    context 'with a pre-selected cluster' do
       before do
         allow(Turbulence::Config).to receive(:get).with(:cluster_name).and_return(cluster.name)
         allow(Turbulence::Config).to receive(:get).with(:cluster_region).and_return(cluster.region)
@@ -96,7 +97,7 @@ describe Turbulence::GCloud::Resources::Cluster do
       end
 
       it 'activates the previously-selected Cluster' do
-        expect(instance).to receive(:activate).and_return(cluster)
+        expect(instance).to receive(:activate)
 
         subject
       end

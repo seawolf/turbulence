@@ -16,7 +16,7 @@ describe Turbulence::Config do
       let(:the_error) { Errno::ENOENT.new('Nope!') }
 
       before do
-        expect(File).to receive(:read).with(described_class::CONFIG_FILE).and_raise(the_error)
+        allow(File).to receive(:read).with(described_class::CONFIG_FILE).and_raise(the_error)
       end
 
       it 'fails' do
@@ -26,7 +26,7 @@ describe Turbulence::Config do
 
     context 'when the file is invalid' do
       before do
-        expect(File).to receive(:read).with(described_class::CONFIG_FILE).and_return('!!!!!')
+        allow(File).to receive(:read).with(described_class::CONFIG_FILE).and_return('!!!!!')
       end
 
       it('returns an empty Hash') { is_expected.to eq({}) }

@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe Turbulence::Menu do
-  it 'defines a menu-ish constant' do
+  it 'defines a menu-ish constant' do # rubocop:disable RSpec/MultipleExpectations
     expect(described_class::PROMPT).to be_respond_to(:say)
     expect(described_class::PROMPT).to be_respond_to(:ok)
     expect(described_class::PROMPT).to be_respond_to(:error)
@@ -22,7 +22,6 @@ describe Turbulence::Menu do
       it 'asks which choice to choose' do
         expect(described_class::PROMPT).to receive(:select)
           .with(question, choices, a_kind_of(Hash))
-          .and_return(choices.sample)
 
         subject
       end

@@ -5,21 +5,21 @@ describe Turbulence::GCloud::ConfigHelper do
     subject { described_class.init_config? }
 
     let(:project_data) do
-      double(:project_data, {
-               id: 'my-project', name: 'My Project'
-             })
+      instance_double(Turbulence::GCloud::Resources::Project::Project, {
+                        id: 'my-project', name: 'My Project'
+                      })
     end
 
     let(:namespace_data) do
-      double(:namespace_data, {
-               name: 'my-namespace'
-             })
+      instance_double(Turbulence::GCloud::Resources::Namespace::Namespace, {
+                        name: 'my-namespace'
+                      })
     end
 
     let(:cluster_data) do
-      double(:cluster_data, {
-               name: 'My Cluster', region: 'my-cluster-region'
-             })
+      instance_double(Turbulence::GCloud::Resources::Cluster::Cluster, {
+                        name: 'My Cluster', region: 'my-cluster-region'
+                      })
     end
 
     before do
@@ -60,14 +60,14 @@ describe Turbulence::GCloud::ConfigHelper do
       end
     end
 
-    context 'a project is missing' do
+    context 'when a project is missing' do
       let(:project_data) do
-        double(:project_data, {
-                 id: nil, name: nil
-               })
+        instance_double(Turbulence::GCloud::Resources::Project::Project, {
+                          id: nil, name: nil
+                        })
       end
 
-      it 'does not confirm the previous selection' do
+      it 'does not confirm the previous selection' do # rubocop:disable RSpec/MultipleExpectations
         expect(Turbulence::Menu::PROMPT).not_to receive(:say)
         expect(Turbulence::Menu).not_to receive(:auto_select)
 

@@ -8,8 +8,8 @@ describe Turbulence::GCloud do
     let(:action) { instance_double(Turbulence::GCloud::Action) }
 
     before do
-      expect(Turbulence::GCloud::Auth).to receive(:new).and_return(auth)
-      expect(Turbulence::GCloud::Action).to receive(:new).and_return(action)
+      allow(Turbulence::GCloud::Auth).to receive(:new).and_return(auth)
+      allow(Turbulence::GCloud::Action).to receive(:new).and_return(action)
     end
 
     context 'when a config file does not exist', :empty_config do

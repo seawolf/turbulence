@@ -30,13 +30,13 @@ describe Turbulence::GCloud::Actions::DestroyNamespace do
       subject
     end
 
-    context 'having confirmed' do
+    context 'when the action is confirmed' do
       it 'runs the command wrapped in whatever `kubectl` needs to get there' do
         expect(instance).to receive(:system).once.with(connection)
       end
     end
 
-    context 'having aborted' do
+    context 'when the action is aborted' do
       let(:confirmed) { false }
 
       it 'does not run any command' do
