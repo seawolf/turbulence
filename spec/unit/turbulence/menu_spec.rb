@@ -22,7 +22,6 @@ describe Turbulence::Menu do
       it 'asks which choice to choose' do
         expect(described_class::PROMPT).to receive(:select)
           .with(question, choices, a_kind_of(Hash))
-          .and_return(choices.sample)
 
         subject
       end

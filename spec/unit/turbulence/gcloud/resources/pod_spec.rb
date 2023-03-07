@@ -45,7 +45,7 @@ describe Turbulence::GCloud::Resources::Pod do
       end
 
       it 'fetches a new Pod' do
-        expect(instance).to receive(:all_pods_list).and_return(pods_list.join("\n"))
+        expect(instance).to receive(:all_pods_list)
 
         subject
       end

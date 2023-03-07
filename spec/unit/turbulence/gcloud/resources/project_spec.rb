@@ -51,13 +51,13 @@ describe Turbulence::GCloud::Resources::Project do
       end
 
       it 'fetches a new Project' do
-        expect(instance).to receive(:projects_list).and_return(projects_list.join("\n"))
+        expect(instance).to receive(:projects_list)
 
         subject
       end
 
       it 'activates the selected Project' do
-        expect(instance).to receive(:activate).and_return(project)
+        expect(instance).to receive(:activate)
 
         subject
       end
@@ -85,7 +85,7 @@ describe Turbulence::GCloud::Resources::Project do
       end
 
       it 'activates the previously-selected Project' do
-        expect(instance).to receive(:activate).and_return(project)
+        expect(instance).to receive(:activate)
 
         subject
       end

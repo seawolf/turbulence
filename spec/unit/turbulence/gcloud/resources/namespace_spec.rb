@@ -45,7 +45,7 @@ describe Turbulence::GCloud::Resources::Namespace do
       end
 
       it 'fetches a new Namespace' do
-        expect(instance).to receive(:namespaces_list).and_return(namespaces_list.join("\n"))
+        expect(instance).to receive(:namespaces_list)
 
         subject
       end

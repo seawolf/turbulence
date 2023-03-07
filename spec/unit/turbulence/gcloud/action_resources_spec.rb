@@ -65,7 +65,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'asks which project should be used' do
-        expect(Turbulence::GCloud::Resources::Project).to receive(:select).and_return(project)
+        expect(Turbulence::GCloud::Resources::Project).to receive(:select).once.and_return(project)
 
         expect(subject).to eq(project)
       end
@@ -214,7 +214,7 @@ describe Turbulence::GCloud::ActionResources do
       end
 
       it 'asks which namespace should be used' do
-        expect(Turbulence::GCloud::Resources::Namespace).to receive(:select).with(cluster).and_return(namespace)
+        expect(Turbulence::GCloud::Resources::Namespace).to receive(:select).with(cluster).once.and_return(namespace)
 
         expect(subject).to eq(namespace)
       end

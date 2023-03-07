@@ -53,13 +53,13 @@ describe Turbulence::GCloud::Resources::Cluster do
       end
 
       it 'fetches a new Cluster' do
-        expect(instance).to receive(:clusters_list).and_return(clusters_list.join("\n"))
+        expect(instance).to receive(:clusters_list)
 
         subject
       end
 
       it 'activates the selected Cluster' do
-        expect(instance).to receive(:activate).and_return(cluster)
+        expect(instance).to receive(:activate)
 
         subject
       end
@@ -97,7 +97,7 @@ describe Turbulence::GCloud::Resources::Cluster do
       end
 
       it 'activates the previously-selected Cluster' do
-        expect(instance).to receive(:activate).and_return(cluster)
+        expect(instance).to receive(:activate)
 
         subject
       end

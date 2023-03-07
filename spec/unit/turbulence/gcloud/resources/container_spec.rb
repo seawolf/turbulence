@@ -46,7 +46,7 @@ describe Turbulence::GCloud::Resources::Container do
       end
 
       it 'fetches a new Container' do
-        expect(instance).to receive(:containers_list).and_return(containers_list.join("\n"))
+        expect(instance).to receive(:containers_list)
 
         subject
       end

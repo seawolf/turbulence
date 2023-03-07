@@ -45,7 +45,7 @@ describe Turbulence::GCloud::Resources::Deployment do
       end
 
       it 'fetches a new Deployment' do
-        expect(instance).to receive(:deployments_list).and_return(deployments_list.join("\n"))
+        expect(instance).to receive(:deployments_list)
 
         subject
       end
