@@ -22,5 +22,9 @@ RSpec/FilePath:
 RSpec/MessageSpies:
   EnforcedStyle: receive
 
+RSpec/MultipleExpectations:
+  Exclude:
+    - spec/unit/turbulence/gcloud/action_resources_spec.rb
+
 RSpec/NamedSubject:
   Enabled: false

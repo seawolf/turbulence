@@ -14,7 +14,7 @@ describe Turbulence::GCloud::Resources::Deployment do
     end
 
     it 'returns a newly-fetched Deployment object' do
-      expect(instance).to receive(:fetch).once do
+      allow(instance).to receive(:fetch).once do
         instance.instance_variable_set('@deployment', deployment)
       end
 

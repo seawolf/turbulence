@@ -67,7 +67,7 @@ describe Turbulence::GCloud::ConfigHelper do
                })
       end
 
-      it 'does not confirm the previous selection' do
+      it 'does not confirm the previous selection' do # rubocop:disable RSpec/MultipleExpectations
         expect(Turbulence::Menu::PROMPT).not_to receive(:say)
         expect(Turbulence::Menu).not_to receive(:auto_select)
 

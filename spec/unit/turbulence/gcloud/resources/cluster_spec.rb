@@ -14,7 +14,7 @@ describe Turbulence::GCloud::Resources::Cluster do
     end
 
     it 'returns a newly-fetched Cluster object' do
-      expect(instance).to receive(:fetch).once do
+      allow(instance).to receive(:fetch).once do
         instance.instance_variable_set('@cluster', cluster)
       end
 

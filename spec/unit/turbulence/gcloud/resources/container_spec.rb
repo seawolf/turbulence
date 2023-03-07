@@ -15,7 +15,7 @@ describe Turbulence::GCloud::Resources::Container do
     end
 
     it 'returns a newly-fetched Container object' do
-      expect(instance).to receive(:fetch).once do
+      allow(instance).to receive(:fetch).once do
         instance.instance_variable_set('@container', container)
       end
 

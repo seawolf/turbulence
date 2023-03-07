@@ -13,7 +13,7 @@ describe Turbulence::GCloud::Resources::Project do
     end
 
     it 'returns a newly-fetched Project object' do
-      expect(instance).to receive(:fetch).once do
+      allow(instance).to receive(:fetch).once do
         instance.instance_variable_set('@project', project)
       end
 

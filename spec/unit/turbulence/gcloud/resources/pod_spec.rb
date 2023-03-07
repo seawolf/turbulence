@@ -14,7 +14,7 @@ describe Turbulence::GCloud::Resources::Pod do
     end
 
     it 'returns a newly-fetched Pod object' do
-      expect(instance).to receive(:fetch).once do
+      allow(instance).to receive(:fetch).once do
         instance.instance_variable_set('@pod', pod)
       end
 

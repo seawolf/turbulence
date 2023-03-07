@@ -14,7 +14,7 @@ describe Turbulence::GCloud::Resources::Namespace do
     end
 
     it 'returns a newly-fetched Namespace object' do
-      expect(instance).to receive(:fetch).once do
+      allow(instance).to receive(:fetch).once do
         instance.instance_variable_set('@namespace', namespace)
       end
 
