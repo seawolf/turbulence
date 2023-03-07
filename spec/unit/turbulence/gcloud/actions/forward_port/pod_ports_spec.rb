@@ -40,14 +40,8 @@ describe Turbulence::GCloud::Actions::ForwardPort::PodPorts do
 
     it 'lists the exposed ports as menu items' do
       expect(subject).to eq([
-                              {
-                                name: '80',
-                                value: '80'
-                              },
-                              {
-                                name: '8080',
-                                value: '8080'
-                              }
+                              { name: '80', value: '80' },
+                              { name: '8080', value: '8080' }
                             ])
     end
   end

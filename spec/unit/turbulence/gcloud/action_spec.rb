@@ -37,7 +37,7 @@ describe Turbulence::GCloud::Action do
     subject
   end
 
-  it 'displays the list of choices compatible with `TTY:Prompt::Choice`' do
+  it 'displays the list of choices compatible with `TTY:Prompt::Choice`' do # rubocop:disable RSpec/ExampleLength
     expect(Turbulence::Menu).to receive(:auto_select).with(
       a_kind_of(String),
       [

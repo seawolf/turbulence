@@ -7,16 +7,20 @@ describe Turbulence::MessageBox do
     subject { described_class.warning(message) }
 
     let(:message) { 'Hello World!' }
+    let(:style) do
+      {
+        fg: :white,
+        bg: :red,
+        border: {
+          fg: :white,
+          bg: :red
+        }
+
+      }
+    end
 
     it 'prints an appropriately-styled warning message', silent_output: true do
-      expect(TTY::Box).to receive(:warn).with('Hello World!', style: {
-                                                fg: :white,
-                                                bg: :red,
-                                                border: {
-                                                  fg: :white,
-                                                  bg: :red
-                                                }
-                                              })
+      expect(TTY::Box).to receive(:warn).with(message, style: style)
 
       subject
     end
