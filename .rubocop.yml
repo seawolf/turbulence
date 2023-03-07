@@ -26,5 +26,8 @@ RSpec/MultipleExpectations:
   Exclude:
     - spec/unit/turbulence/gcloud/action_resources_spec.rb
 
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
 RSpec/NamedSubject:
   Enabled: false
