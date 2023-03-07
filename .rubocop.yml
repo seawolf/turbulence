@@ -19,5 +19,8 @@ RSpec/FilePath:
   CustomTransform:
     GCloud: gcloud
 
+RSpec/MessageSpies:
+  EnforcedStyle: receive
+
 RSpec/NamedSubject:
   Enabled: false
