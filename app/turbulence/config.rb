@@ -8,7 +8,10 @@ module Turbulence
     module_function
 
     def config
-      YAML.load(File.read(CONFIG_FILE)) || {} # rubocop:disable Security/YAMLLoad
+      # raise here when there is no config file, as `init_config!` should put one there first
+      # rubocop:disable Style/YAMLFileRead,Security/YAMLLoad
+      YAML.load(File.read(CONFIG_FILE)) || {}
+      # rubocop:enable Style/YAMLFileRead,Security/YAMLLoad
     end
 
     def config!(data)
