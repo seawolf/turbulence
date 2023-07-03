@@ -101,4 +101,4 @@ end
 
 Dir.glob('./spec/support/*.rb').map { |f| require f }
 
-require_relative './../turbulence'
+require_relative '../turbulence'
