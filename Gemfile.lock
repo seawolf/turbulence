@@ -85,7 +85,7 @@ GEM
     unicode-display_width (2.4.2)
     unicode_utils (1.4.0)
     wisper (2.0.1)
-    zeitwerk (2.6.8)
+    zeitwerk (2.6.10)
 
 PLATFORMS
   ruby
