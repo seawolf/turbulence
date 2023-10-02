@@ -19,7 +19,7 @@ describe Turbulence::MessageBox do
       }
     end
 
-    it 'prints an appropriately-styled warning message', silent_output: true do
+    it 'prints an appropriately-styled warning message', :silent_output do
       expect(TTY::Box).to receive(:warn).with(message, style: style)
 
       subject
