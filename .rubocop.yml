@@ -17,6 +17,10 @@ RSpec/FilePath:
   CustomTransform:
     GCloud: gcloud
 
+RSpec/SpecFilePathFormat:
+  CustomTransform:
+    GCloud: gcloud
+
 RSpec/MessageSpies:
   EnforcedStyle: receive
 
