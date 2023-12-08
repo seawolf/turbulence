@@ -27,6 +27,7 @@ module Turbulence
         SUGGESTED_COMMANDS = [
           '/bin/bash',
           '/bin/sh',
+          'bin/console',
           'bundle exec rails console',
           'bundle exec irb',
 
