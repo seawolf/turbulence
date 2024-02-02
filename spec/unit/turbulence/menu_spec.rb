@@ -4,10 +4,10 @@ require 'spec_helper'
 
 describe Turbulence::Menu do
   it 'defines a menu-ish constant' do # rubocop:disable RSpec/MultipleExpectations
-    expect(described_class::PROMPT).to be_respond_to(:say)
-    expect(described_class::PROMPT).to be_respond_to(:ok)
-    expect(described_class::PROMPT).to be_respond_to(:error)
-    expect(described_class::PROMPT).to be_respond_to(:select)
+    expect(described_class::PROMPT).to respond_to(:say)
+    expect(described_class::PROMPT).to respond_to(:ok)
+    expect(described_class::PROMPT).to respond_to(:error)
+    expect(described_class::PROMPT).to respond_to(:select)
   end
 
   describe '.auto_select', :silent_output do
