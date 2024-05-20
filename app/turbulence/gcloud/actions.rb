@@ -9,6 +9,7 @@ module Turbulence
         TailLogsSingleContainer,
         TailLogsAllContainers,
         ForwardPort,
+        DownloadFile,
         RestartDeployment,
         DestroyNamespace
       ].freeze
