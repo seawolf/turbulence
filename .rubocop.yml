@@ -13,10 +13,6 @@ Style/Documentation:
     - lib/core_ext/*.rb
     - spec/support/*.rb
 
-RSpec/FilePath:
-  CustomTransform:
-    GCloud: gcloud
-
 RSpec/SpecFilePathFormat:
   CustomTransform:
     GCloud: gcloud
