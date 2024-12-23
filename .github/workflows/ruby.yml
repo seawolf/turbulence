@@ -19,7 +19,7 @@ jobs:
     - name: Run test suite
       run: bundle exec rspec
     - name: Store coverage report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: code-coverage-report
         path: spec/coverage
