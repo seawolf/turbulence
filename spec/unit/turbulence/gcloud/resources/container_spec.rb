@@ -61,7 +61,7 @@ describe Turbulence::GCloud::Resources::Container do
     end
 
     context 'without a pre-selected container' do
-      include_examples 'fetching and selecting a container'
+      it_behaves_like 'fetching and selecting a container'
     end
 
     context 'with a pre-selected container' do
@@ -69,7 +69,7 @@ describe Turbulence::GCloud::Resources::Container do
         allow(Turbulence::Config).to receive(:get).with(:container_name).and_return(container.name)
       end
 
-      include_examples 'fetching and selecting a container'
+      it_behaves_like 'fetching and selecting a container'
     end
   end
 end
